@@ -30,7 +30,7 @@ class StoreProductRequest extends FormRequest
             'name' => 'required|unique:App\Models\Product,name',
             'type' => 'required|in:' . ProductType::toRule(),
             'description' => 'required',
-            'photo_url' => 'required|file|image',
+            'photo_url' => 'required|string',
             'price' => 'required|numeric'
         ];
 

@@ -2,11 +2,9 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Validation\Rule;
-use App\Models\Types\ProductType;
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateProductRequest extends FormRequest
+class StoreImageRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,17 +24,9 @@ class UpdateProductRequest extends FormRequest
      */
     public function rules()
     {
-        $rules = [
-            'name' => [
-                Rule::unique('App\Models\Product', 'name')->ignore($this->id)
-            ],
-            'type' => [
-                Rule::in(ProductType::toRule())
-            ],
-            'photo_url' => 'string',
-            'price' => 'numeric'
+        return [
+            'path' => 'required|in:products,fotos',
+            'image' => 'required|image'
         ];
-
-        return $rules;
     }
 }

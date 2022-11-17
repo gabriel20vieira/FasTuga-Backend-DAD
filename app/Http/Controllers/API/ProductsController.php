@@ -12,8 +12,6 @@ use Illuminate\Support\Facades\DB;
 
 class ProductsController extends Controller
 {
-    use StoresImages;
-
     /**
      * Display a listing of the resource.
      *
@@ -36,7 +34,7 @@ class ProductsController extends Controller
             'name' => $request->name,
             'type' => $request->type,
             'description' => $request->description,
-            'photo_url' => $this->storeImage($request, 'products', 'photo_url'),
+            'photo_url' => $request->photo_url,
             'price' => $request->price,
             'custom' => $request->custom,
         ]);
