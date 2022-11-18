@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\API;
 
 use App\Models\Product;
-use App\Traits\StoresImages;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductResource;
 use App\Http\Requests\StoreProductRequest;
@@ -30,14 +29,14 @@ class ProductsController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
-        $product = Product::create([
-            'name' => $request->name,
-            'type' => $request->type,
-            'description' => $request->description,
-            'photo_url' => $request->photo_url,
-            'price' => $request->price,
-            'custom' => $request->custom,
-        ]);
+
+        $product = new Product();
+        $product->fill($request->validated());
+
+        $product = DB::transaction(function () use ($product) {
+            $product->save();
+            return $product;
+        });
 
         return new ProductResource($product);
     }
@@ -62,7 +61,12 @@ class ProductsController extends Controller
      */
     public function update(UpdateProductRequest $request, Product $product)
     {
-        $product->update($request->validated());
+        $product->fill($request->validated());
+
+        DB::transaction(function () use ($request, $product) {
+            $product->save();
+        });
+
         return new ProductResource($product);
     }
 
@@ -74,7 +78,10 @@ class ProductsController extends Controller
      */
     public function destroy(Product $product)
     {
-        $product->delete();
+        DB::transaction(function () use ($product) {
+            $product->delete();
+        });
+
         return new ProductResource($product);
     }
 }
