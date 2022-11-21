@@ -17,11 +17,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// TODO Substitute later for passport
-// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
-
 Route::group([
     'as' => 'v1.',
     'prefix' => 'v1',
