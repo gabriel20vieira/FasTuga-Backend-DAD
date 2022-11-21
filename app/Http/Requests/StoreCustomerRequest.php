@@ -34,6 +34,5 @@ class StoreCustomerRequest extends FormRequest
         ];
 
         return $rules;
-
     }
 }

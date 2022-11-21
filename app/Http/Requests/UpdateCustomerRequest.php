@@ -26,15 +26,13 @@ class UpdateCustomerRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            
-            'phone' => ['string',Rule::unique('App\Models\Customer', 'phone')->ignore($this->id)],
-            'nif' => ['required,integer',Rule::unique('App\Models\Customer', 'nif')->ignore($this->id)],
+            'phone' => ['string', Rule::unique('App\Models\Customer', 'phone')->ignore($this->phone)],
+            'nif' => ['required,integer', Rule::unique('App\Models\Customer', 'nif')->ignore($this->nif)],
             'points' => 'integer',
             'default_payment_type' => 'in:' . PaymentType::toRule(),
             'default_payment_reference' => 'required|string',
         ];
 
         return $rules;
-
     }
 }
