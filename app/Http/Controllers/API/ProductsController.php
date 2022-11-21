@@ -63,7 +63,7 @@ class ProductsController extends Controller
     {
         $product->fill($request->validated());
 
-        DB::transaction(function () use ($request, $product) {
+        DB::transaction(function () use ($product) {
             $product->save();
         });
 

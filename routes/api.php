@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\Auth\AuthenticationController;
 use App\Http\Controllers\API\ProductsController;
 use App\Http\Controllers\API\UsersController;
 use Illuminate\Http\Request;
@@ -21,13 +22,25 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // });
 
-Route::group(['prefix' => 'v1'], function () {
-    Route::apiResource('products', ProductsController::class);
-});
+Route::group([
+    'as' => 'v1.',
+    'prefix' => 'v1',
+], function () {
 
-//* USERS *//
-Route::get('users', [UsersController::class, 'index']);
-Route::get('users/{user}', [UsersController::class, 'show']);
-Route::post('users', [UsersController::class, 'store']);
-Route::put('users/{user}', [UsersController::class, 'update']);
-Route::delete('users/{user}', [UsersController::class, 'destroy']);
+    // ─── Public Routes ───────────────────────────────────────────────────
+
+    Route::post('login', [AuthenticationController::class, 'login'])->name('api.login');
+    Route::post('register', [AuthenticationController::class, 'register'])->name('api.register');
+
+
+    // ─── Authentication Protection ───────────────────────────────────────
+
+    Route::group([
+        'middleware' => [
+            'auth:api'
+        ]
+    ], function () {
+        Route::apiResource('products', ProductsController::class);
+        Route::apiResource('users', UsersController::class);
+    });
+});
