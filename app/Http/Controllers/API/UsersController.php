@@ -20,6 +20,11 @@ class UsersController extends Controller
     public function store(StoreUserRequest $request)
     {
         $newUser = User::create($request->validated());
+
+        $password = bcrypt($request->password);
+        $newUser->password = $password;
+        $newUser->save();
+
         return new UserResource($newUser);
     }
 
