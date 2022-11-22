@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Types\UserType;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreUserRequest extends FormRequest
@@ -28,7 +29,14 @@ class StoreUserRequest extends FormRequest
             'name' => 'required',
             'email' => 'required|unique:users,email|email',
             'password' => 'required',
-            'type' => 'required|in:c,ec,ed,em',
+            'type' => 'required|in:' . UserType::toRule(),
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'type.in' => "The selected user type is invalid. One is required: " . UserType::toString()
         ];
     }
 }
