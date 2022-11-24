@@ -12,6 +12,8 @@ class ImageController extends Controller
 
     public function upload(StoreImageRequest $request)
     {
-        return $this->storeImage($request, $request->input('path'), 'image');
+        return [
+            'image' => $this->storeImage($request, $request->input('path'), 'image')
+        ];
     }
 }

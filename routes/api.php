@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\API\Auth\AuthenticationController;
+use App\Http\Controllers\API\ImageController;
 use App\Http\Controllers\API\ProductsController;
 use App\Http\Controllers\API\UsersController;
 use Illuminate\Http\Request;
@@ -35,6 +36,8 @@ Route::group([
             'auth:api'
         ]
     ], function () {
+        Route::post('/upload/image', [ImageController::class, 'upload'])->name('upload.image');
+
         Route::apiResource('products', ProductsController::class);
         Route::apiResource('users', UsersController::class);
     });

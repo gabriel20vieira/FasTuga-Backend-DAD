@@ -29,7 +29,6 @@ class ProductsController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
-
         $product = new Product();
         $product->fill($request->validated());
 
