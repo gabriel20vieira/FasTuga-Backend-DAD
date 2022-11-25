@@ -31,6 +31,8 @@ class ProductsController extends Controller
     {
 
         $product = new Product();
+
+        $product->status = 'P';
         $product->fill($request->validated());
 
         $product = DB::transaction(function () use ($product) {
