@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API\Auth;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 
 class AuthenticationController extends Controller
 {
@@ -47,8 +48,9 @@ class AuthenticationController extends Controller
             'email' => $request->email,
             'password' => $request->password
         ])) {
-            $token = auth()->user()->createToken('LaravelAuthApp')->accessToken;
-            return response()->json(['token' => $token]);
+            $user = new UserResource(auth()->user());
+            $token = $user->createToken('LaravelAuthApp')->accessToken;
+            return $user->additional(['token ' => $token]);
         }
 
         return response()->json(['error' => 'Unauthorised'], 401);
