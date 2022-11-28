@@ -50,7 +50,7 @@ class AuthenticationController extends Controller
         ])) {
             $user = new UserResource(auth()->user());
             $token = $user->createToken('LaravelAuthApp')->accessToken;
-            return $user->additional(['token ' => $token]);
+            return $user->additional(['token' => $token]);
         }
 
         return response()->json(['error' => 'Unauthorised'], 401);
