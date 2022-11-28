@@ -25,15 +25,14 @@ class AuthenticationController extends Controller
         ]);
 
         $password = bcrypt($request->password);
-        $user = User::create([
+        User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => $password
         ]);
 
-        $token = $user->createToken('LaravelAuthApp')->accessToken;
 
-        return response()->json(['token' => $token], 200);
+        return response()->json(['message' => 'Register successful'], 200);
     }
 
     /**
@@ -53,7 +52,7 @@ class AuthenticationController extends Controller
             return $user->additional(['token' => $token]);
         }
 
-        return response()->json(['error' => 'Unauthorised'], 401);
+        return response()->json(['message' => 'Authentication has failed!'], 401);
     }
 
     public function logout(Request $request)
