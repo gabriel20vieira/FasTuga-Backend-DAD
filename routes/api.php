@@ -18,16 +18,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::group([
-    'as' => 'v1.',
-    'prefix' => 'v1',
-], function () {
-
+Route::group([], function () {
     // ─── Public Routes ───────────────────────────────────────────────────
 
     Route::post('login', [AuthenticationController::class, 'login'])->name('api.login');
     Route::post('register', [AuthenticationController::class, 'register'])->name('api.register');
-
 
     // ─── Authentication Protection ───────────────────────────────────────
 
