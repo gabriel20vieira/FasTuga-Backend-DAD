@@ -25,12 +25,15 @@ class AuthenticationController extends Controller
         ]);
 
         $password = bcrypt($request->password);
-        User::create([
+
+        /** @var \App\Models\User $user */
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => $password
         ]);
 
+        $user->markEmailAsVerified();
 
         return response()->json(['message' => 'Register successful'], 200);
     }
@@ -48,13 +51,19 @@ class AuthenticationController extends Controller
             'password' => $request->password
         ])) {
             $user = new UserResource(auth()->user());
-            $token = $user->createToken('LaravelAuthApp')->accessToken;
+            $token = $user->createToken('FasTugaToken')->accessToken;
             return $user->additional(['token' => $token]);
         }
 
         return response()->json(['message' => 'Authentication has failed!'], 401);
     }
 
+    /**
+     * Logout the user
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Response
+     */
     public function logout(Request $request)
     {
         $token = $request->user()->token();

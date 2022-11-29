@@ -19,18 +19,24 @@ use Illuminate\Support\Facades\Route;
 
 // ─── Public Routes ───────────────────────────────────────────────────
 
-Route::post('login', [AuthenticationController::class, 'login'])->name('api.login');
-Route::post('register', [AuthenticationController::class, 'register'])->name('api.register');
+Route::post('login', [AuthenticationController::class, 'login'])->name('login');
+Route::post('register', [AuthenticationController::class, 'register'])->name('register');
 
 // ─── Authentication Protection ───────────────────────────────────────
 
-Route::middleware('auth:api')->group(function () {
-    Route::post('logout', [AuthenticationController::class, 'logout']);
+Route::group([
+    'middleware' => [
+        'auth:api',
+        // 'throttle:20,10',
+        // 'verified'
+    ]
+], function () {
     Route::get('users/me', [UsersController::class, 'show_me']); //Has to be the first endpoint from user to work (this is stupid >.>)
+    Route::post('logout', [AuthenticationController::class, 'logout'])->name('logout');
 
-    Route::post('/upload/image', [ImageController::class, 'upload'])->name('upload.image');
+    Route::get('/image/{image}', [ImageController::class, 'show'])->name('image.show');
+    Route::post('/image', [ImageController::class, 'upload'])->name('image.upload');
 
     Route::apiResource('products', ProductsController::class);
-
     Route::apiResource('users', UsersController::class);
 });
