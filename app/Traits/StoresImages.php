@@ -2,24 +2,43 @@
 
 namespace App\Traits;
 
-use Illuminate\Foundation\Http\FormRequest;
+use Exception;
+use Illuminate\Support\Str;
+use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Foundation\Http\FormRequest;
 
 trait StoresImages
 {
     private function storeImage(FormRequest $request, $folder, $string)
     {
-        $saved = "";
-        if ($request->file($string)->isValid()) {
-            if (!preg_match("/^\/.+/m", $folder)) {
-                $folder = "/" . $folder;
-            }
+        if (!preg_match("/^\/.+/m", $folder)) {
+            $folder = "/" . $folder;
+        }
+        $folder = "public$folder";
 
-            $saved = Storage::putFile(
-                'public' . $folder,
+        if ($request->hasFile($string)) {
+            $stored = Storage::putFile(
+                $folder,
                 $request->file($string)
             );
+            return preg_replace("/^public/i", "/storage", $stored);
+        } else if (preg_match("/^data:image\/\w.*;base64/i", $request->input($string))) {
+
+            preg_match("/data:image\/(.*?);/", $request->input($string), $extension);
+            $image = preg_replace('/data:image\/(.*?);base64,/', '', $request->input($string));
+            $folder = $folder . "/" . Str::random() . "." . end($extension);
+
+            $stored = Storage::put(
+                $folder,
+                base64_decode($image)
+            );
+
+            if ($stored) {
+                return preg_replace("/^public/i", "/storage", $folder);
+            }
         }
-        return $saved;
+
+        abort(422, "Bad image provided.");
     }
 }

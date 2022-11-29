@@ -26,7 +26,7 @@ class StoreImageRequest extends FormRequest
     {
         return [
             'path' => 'required|in:products,fotos',
-            'image' => 'required|image'
+            'image' => 'required|imageable'
         ];
     }
 }
