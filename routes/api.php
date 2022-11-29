@@ -4,7 +4,6 @@ use App\Http\Controllers\API\Auth\AuthenticationController;
 use App\Http\Controllers\API\ImageController;
 use App\Http\Controllers\API\ProductsController;
 use App\Http\Controllers\API\UsersController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,22 +17,20 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::group([], function () {
-    // ─── Public Routes ───────────────────────────────────────────────────
+// ─── Public Routes ───────────────────────────────────────────────────
 
-    Route::post('login', [AuthenticationController::class, 'login'])->name('api.login');
-    Route::post('register', [AuthenticationController::class, 'register'])->name('api.register');
+Route::post('login', [AuthenticationController::class, 'login'])->name('api.login');
+Route::post('register', [AuthenticationController::class, 'register'])->name('api.register');
 
-    // ─── Authentication Protection ───────────────────────────────────────
+// ─── Authentication Protection ───────────────────────────────────────
 
-    Route::group([
-        'middleware' => [
-            'auth:api'
-        ]
-    ], function () {
-        Route::post('/upload/image', [ImageController::class, 'upload'])->name('upload.image');
+Route::middleware('auth:api')->group(function () {
+    Route::post('logout', [AuthenticationController::class, 'logout']);
+    Route::get('users/me', [UsersController::class, 'show_me']); //Has to be the first endpoint from user to work (this is stupid >.>)
 
-        Route::apiResource('products', ProductsController::class);
-        Route::apiResource('users', UsersController::class);
-    });
+    Route::post('/upload/image', [ImageController::class, 'upload'])->name('upload.image');
+
+    Route::apiResource('products', ProductsController::class);
+
+    Route::apiResource('users', UsersController::class);
 });

@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
+use Illuminate\Http\Request;
 
 class UsersController extends Controller
 {
@@ -46,5 +47,10 @@ class UsersController extends Controller
     {
         $user->delete();
         return new UserResource($user);
+    }
+
+    public function show_me(Request $request)
+    {
+        return new UserResource($request->user());
     }
 }

@@ -59,6 +59,7 @@ class AuthenticationController extends Controller
     {
         $token = $request->user()->token();
         $token->revoke();
-        return response()->json(['message' => 'You have been successfully logged out!']);
+        $token->delete();
+        return response()->json(['message' => 'You have been successfully logged out!'], 200);
     }
 }
