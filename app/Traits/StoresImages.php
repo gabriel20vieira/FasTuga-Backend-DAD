@@ -2,9 +2,7 @@
 
 namespace App\Traits;
 
-use Exception;
 use Illuminate\Support\Str;
-use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Http\FormRequest;
 

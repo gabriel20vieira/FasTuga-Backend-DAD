@@ -2,9 +2,6 @@
 
 namespace App\Traits;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Storage;
-
 trait ToArray
 {
     public static function toArray()

@@ -2,14 +2,11 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Traits\StoresImages;
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Storage;
-use App\Http\Requests\StoreImageRequest;
 use App\Traits\LoadsImages;
+use App\Traits\StoresImages;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Gate;
+use App\Http\Requests\StoreImageRequest;
 
 class ImageController extends Controller
 {

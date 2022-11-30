@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\API;
 
 use App\Models\Product;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductResource;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
-use Illuminate\Support\Facades\DB;
 
 class ProductsController extends Controller
 {

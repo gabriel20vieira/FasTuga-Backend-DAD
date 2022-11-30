@@ -4,10 +4,10 @@ namespace App\Http\Controllers\API\Auth;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\RegisterUserRequest;
-use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
+use App\Http\Requests\RegisterUserRequest;
 
 class AuthenticationController extends Controller
 {
