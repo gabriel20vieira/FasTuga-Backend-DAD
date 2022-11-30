@@ -11,6 +11,15 @@ use Illuminate\Support\Facades\DB;
 
 class ProductsController extends Controller
 {
+
+    /**
+     * Authorization for this resource
+     */
+    public function __construct()
+    {
+        $this->authorizeResource(Product::class, 'product');
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -18,7 +27,8 @@ class ProductsController extends Controller
      */
     public function index()
     {
-        return ProductResource::collection(Product::latest()->paginate());
+        $this->authorize('viewAny', Product::class);
+        return ProductResource::collection(Product::latest()->paginate(env('PAGINATE', 15)));
     }
 
     /**

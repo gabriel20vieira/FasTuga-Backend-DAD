@@ -23,9 +23,9 @@ class Controller extends BaseController
      * @param Builder $paginator
      * @return void
      */
-    public function paginateBuilder(Builder $paginator)
+    public function paginateBuilder(Builder $paginator, $paginate = null)
     {
-        $paginator = $paginator->latest()->paginate()->withQueryString();
+        $paginator = $paginator->latest()->paginate($paginate ?? env('PAGINATE', 15))->withQueryString();
 
         if ($paginator->isEmpty() && !$paginator->onFirstPage()) {
             $this->redirect($paginator->url(1));

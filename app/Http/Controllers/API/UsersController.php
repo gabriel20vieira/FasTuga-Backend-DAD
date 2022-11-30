@@ -17,6 +17,14 @@ class UsersController extends Controller
 {
 
     /**
+     * Authorization for this resource
+     */
+    public function __construct()
+    {
+        $this->authorizeResource(User::class, 'user');
+    }
+
+    /**
      * Display a listing of the resource.
      *
      * @param Request $request
@@ -25,7 +33,7 @@ class UsersController extends Controller
     public function index(Request $request)
     {
         $builder = User::query();
-        $builder->sortType($request->input('type'));
+        $builder->ofType($request->input('type'));
 
         return UserResource::collection($this->paginateBuilder($builder));
     }

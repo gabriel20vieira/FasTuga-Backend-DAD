@@ -65,10 +65,82 @@ class User extends Authenticatable
      * @param string $type
      * @return void
      */
-    public function scopeSortType(Builder $builder, mixed $type)
+    public function scopeOfType(Builder $builder, mixed $type)
     {
         if ($type && in_array($type, UserType::toArray())) {
             $builder = $builder->where('type', $type);
         }
+    }
+
+
+    /**
+     * Checks user type
+     *
+     * @param UserType $type
+     * @return boolean
+     */
+    public function isOfType(UserType $type)
+    {
+        return $this->type == $type;
+    }
+
+    /**
+     * Checks if user is manager
+     *
+     * @return boolean
+     */
+    public function isManager()
+    {
+        return $this->isOfType(UserType::MANAGER);
+    }
+
+    /**
+     * Checks if user is Chef
+     *
+     * @return boolean
+     */
+    public function isChef()
+    {
+        return $this->isOfType(UserType::CHEF);
+    }
+
+    /**
+     * Checks if user is customer
+     *
+     * @return boolean
+     */
+    public function isCustomer()
+    {
+        return $this->isOfType(UserType::CUSTOMER);
+    }
+
+    /**
+     * Checks if user is delivery guy
+     *
+     * @return boolean
+     */
+    public function isDelivery()
+    {
+        return $this->isOfType(UserType::DELIVERY);
+    }
+
+    /**
+     * Allows any user that is not authenticated
+     *
+     * @return boolean
+     */
+    public function isAnonymous()
+    {
+        return auth()->user() == null;
+    }
+
+    /**
+     * Allows anyone
+     *
+     * @return boolean
+     */
+    public function isAny()
+    {
+        return true;
     }
 }
