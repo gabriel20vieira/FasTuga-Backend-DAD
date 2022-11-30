@@ -3,8 +3,12 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use App\Models\Types\UserType;
 use Laravel\Passport\HasApiTokens;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
@@ -43,4 +47,18 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    /**
+     * Type selection
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $builder
+     * @param string $type
+     * @return void
+     */
+    public function scopeSortType(Builder $builder, mixed $type)
+    {
+        if ($type && in_array($type, UserType::toArray())) {
+            $builder = $builder->where('type', $type);
+        }
+    }
 }

@@ -2,54 +2,116 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Http\Request;
+use App\Models\Types\UserType;
+use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
+use Illuminate\Pagination\Paginator;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
-use App\Http\Resources\UserResource;
-use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 class UsersController extends Controller
 {
-    // Display a listing of users
-    public function index()
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function index(Request $request)
     {
-        return UserResource::collection(User::latest()->paginate());
+        $builder = User::query();
+        $builder->sortType($request->input('type'));
+
+        return UserResource::collection($this->paginateBuilder($builder));
     }
 
-    // Store a newly created user in storage
+    /**
+     * Stores resource
+     *
+     * @param StoreUserRequest $request
+     * @return \Illuminate\Http\Response
+     */
     public function store(StoreUserRequest $request)
     {
-        $newUser = User::create($request->validated());
 
-        $password = bcrypt($request->password);
-        $newUser->password = $password;
-        $newUser->save();
+        $user = DB::transaction(function () use ($request) {
+            $user = new User($request->safe()->except('password'));
+            $user->password = bcrypt($request->password);
+            $user->save();
+            return $user;
+        });
 
-        return new UserResource($newUser);
+        return new UserResource($user);
     }
 
-    // Display the specified user
+    /**
+     * Displays resource
+     *
+     * @param User $user
+     * @return \Illuminate\Http\Response
+     */
     public function show(User $user)
     {
         return new UserResource($user);
     }
 
-    // Update the specified user in storage
+    /**
+     * Updates resource
+     *
+     * @param StoreUserRequest $request
+     * @param User $user
+     * @return \Illuminate\Http\Response
+     */
     public function update(UpdateUserRequest $request, User $user)
     {
-        $user->update($request->validated());
-        return new UserResource($user);
+        $changedPassword = false;
+
+        DB::transaction(function () use ($request, $user, &$changedPassword) {
+            $user->update($request->safe()->except('password'));
+            if ($request->has('password')) {
+                $user->password = bcrypt($request->password);
+                $changedPassword = true;
+            }
+            $user->save();
+            return $user;
+        });
+
+        $data = new UserResource($user);
+
+        if ($changedPassword) {
+            $data->additional(['message' => 'Password changed successfully.']);
+        }
+
+        return $data;
     }
 
-    // Remove the specified user from storage
+    /**
+     * Destroys resource
+     *
+     * @param User $user
+     * @return \Illuminate\Http\Response
+     */
     public function destroy(User $user)
     {
-        $user->delete();
+        DB::transaction(function () use ($user) {
+            $user->delete();
+        });
+
         return new UserResource($user);
     }
 
-    public function show_me(Request $request)
+    /**
+     * Showw logged in user
+     *
+     * @param StoreUserRequest $request
+     * @return \Illuminate\Http\Response
+     */
+    public function me(Request $request)
     {
         return new UserResource($request->user());
     }

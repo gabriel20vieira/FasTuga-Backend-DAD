@@ -2,11 +2,9 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Types\UserType;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class UpdateUserRequest extends FormRequest
+class RegisterUserRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,11 +24,9 @@ class UpdateUserRequest extends FormRequest
     public function rules()
     {
         return [
-            'email' => [
-                'email',
-                Rule::unique('users')->ignore($this->user),
-            ],
-            'type' => 'in:' . UserType::toRule(),
+            'name' => 'required|min:4',
+            'email' => 'required|email|unique:App\Models\User,email',
+            'password' => 'required|min:8',
         ];
     }
 }

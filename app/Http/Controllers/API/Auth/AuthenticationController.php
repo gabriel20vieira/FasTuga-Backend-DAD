@@ -5,10 +5,14 @@ namespace App\Http\Controllers\API\Auth;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RegisterUserRequest;
 use App\Http\Resources\UserResource;
+use Illuminate\Support\Facades\DB;
 
 class AuthenticationController extends Controller
 {
+
+    private string $tokenName = "FasTugaToken";
 
     /**
      * Registers new customer
@@ -16,24 +20,15 @@ class AuthenticationController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\Response
      */
-    public function register(Request $request)
+    public function register(RegisterUserRequest $request)
     {
-        $this->validate($request, [
-            'name' => 'required|min:4',
-            'email' => 'required|email|unique:App\Models\User,email',
-            'password' => 'required|min:8',
-        ]);
-
-        $password = bcrypt($request->password);
-
-        /** @var \App\Models\User $user */
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => $password
-        ]);
-
-        $user->markEmailAsVerified();
+        DB::transaction(function () use ($request) {
+            /** @var \App\Models\User $user */
+            $user = new User($request->safe()->only(['name', 'email']));
+            $user->password = bcrypt($request->password);
+            $user->save();
+            $user->markEmailAsVerified();
+        });
 
         return response()->json(['message' => 'Register successful'], 200);
     }
@@ -50,9 +45,9 @@ class AuthenticationController extends Controller
             'email' => $request->email,
             'password' => $request->password
         ])) {
-            $user = new UserResource(auth()->user());
-            $token = $user->createToken('FasTugaToken')->accessToken;
-            return $user->additional(['token' => $token]);
+            $user = auth()->user();
+            $token = $user->createToken($this->tokenName)->accessToken;
+            return (new UserResource($user))->additional(['token' => $token]);
         }
 
         return response()->json(['message' => 'Authentication has failed!'], 401);
@@ -66,9 +61,12 @@ class AuthenticationController extends Controller
      */
     public function logout(Request $request)
     {
-        $token = $request->user()->token();
-        $token->revoke();
-        $token->delete();
+        DB::transaction(function () use ($request) {
+            $token = $request->user()->token();
+            $token->revoke();
+            $token->delete();
+        });
+
         return response()->json(['message' => 'You have been successfully logged out!'], 200);
     }
 }

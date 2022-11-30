@@ -29,10 +29,8 @@ class ProductsController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
-        $product = new Product();
-        $product->fill($request->validated());
-
-        $product = DB::transaction(function () use ($product) {
+        $product = DB::transaction(function () use ($request) {
+            $product = new Product($request->validated());
             $product->save();
             return $product;
         });
@@ -60,9 +58,9 @@ class ProductsController extends Controller
      */
     public function update(UpdateProductRequest $request, Product $product)
     {
-        $product->fill($request->validated());
 
-        DB::transaction(function () use ($product) {
+        DB::transaction(function () use ($request, $product) {
+            $product->fill($request->validated());
             $product->save();
         });
 
