@@ -27,16 +27,19 @@ Route::post('register', [AuthenticationController::class, 'register'])->name('re
 Route::group([
     'middleware' => [
         'auth:api',
+        'response.json'
         // 'throttle:20,10',
         // 'verified'
     ]
 ], function () {
-    Route::get('users/me', [UsersController::class, 'show_me']); //Has to be the first endpoint from user to work (this is stupid >.>)
     Route::post('logout', [AuthenticationController::class, 'logout'])->name('logout');
 
     Route::get('/image/{image}', [ImageController::class, 'show'])->name('image.show');
     Route::post('/image', [ImageController::class, 'upload'])->name('image.upload');
 
     Route::apiResource('products', ProductsController::class);
+
+    // The follow must be called by order of explicity, otherwise the route will be overrided
+    Route::get('users/me', [UsersController::class, 'me']);
     Route::apiResource('users', UsersController::class);
 });
