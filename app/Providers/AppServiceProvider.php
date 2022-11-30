@@ -33,5 +33,23 @@ class AppServiceProvider extends ServiceProvider
                 return false;
             }
         });
+
+        Validator::extend('nif', function ($attribute, $value, $params, $validator) {
+            if (strlen($value) != 9) {
+                return false;
+            }
+
+            $sum = 0;
+            for ($i = 8; $i > 0; $i--) {
+                $sum += ($value[$i - 1] * (10 - $i));
+            }
+
+            $rest = $sum % 11;
+            if ($rest == 0 || $rest == 1) {
+                return $value[8] == 0;
+            }
+
+            return (11 - $rest) == $value[8];
+        });
     }
 }

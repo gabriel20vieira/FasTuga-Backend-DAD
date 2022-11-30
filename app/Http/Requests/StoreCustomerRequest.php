@@ -25,14 +25,21 @@ class StoreCustomerRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            'user_id' => 'required|users,id',
-            'phone' => 'required|unique|string',
+            'user_id' => 'required|exists:users,id',
+            'phone' => 'required|unique:customers,phone|string',
             'points' => 'integer',
-            'nif' => 'required|unique,integer',
+            'nif' => 'required|unique:customers,nif|nif',
             'default_payment_type' => 'required|in:' . PaymentType::toRule(),
             'default_payment_reference' => 'required|string',
         ];
 
         return $rules;
+    }
+
+    public function messages()
+    {
+        return [
+            'nif.nif' => 'The :attribute is not valid.'
+        ];
     }
 }

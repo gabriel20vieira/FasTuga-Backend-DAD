@@ -49,6 +49,16 @@ class User extends Authenticatable
     ];
 
     /**
+     * Customer associated with user
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function customer()
+    {
+        return $this->hasOne(Customer::class);
+    }
+
+    /**
      * Type selection
      *
      * @param \Illuminate\Database\Eloquent\Builder $builder
