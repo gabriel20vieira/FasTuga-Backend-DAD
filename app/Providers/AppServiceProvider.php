@@ -40,8 +40,8 @@ class AppServiceProvider extends ServiceProvider
             }
 
             $sum = 0;
-            for ($i = 8; $i > 0; $i--) {
-                $sum += ($value[$i - 1] * (10 - $i));
+            for ($i = 7; $i >= 0; $i--) {
+                $sum += ($value[$i] * (9 - $i));
             }
 
             $rest = $sum % 11;
