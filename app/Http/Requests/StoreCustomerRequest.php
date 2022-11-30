@@ -25,7 +25,7 @@ class StoreCustomerRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            'user_id' => 'required|unique',
+            'user_id' => 'required|users,id',
             'phone' => 'required|unique|string',
             'points' => 'integer',
             'nif' => 'required|unique,integer',

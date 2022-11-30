@@ -20,10 +20,8 @@ class CustomersController extends Controller
 
     public function store(StoreCustomerRequest $request)
     {
-        $customer = new Customer();
-        $customer->fill($request->validated());
-
-        $customer = DB::transaction(function () use ($customer) {
+        $customer = DB::transaction(function () use ($request) {
+            $customer = new Customer($request->validated());
             $customer->save();
             return $customer;
         });
@@ -40,10 +38,9 @@ class CustomersController extends Controller
 
     public function update(UpdateCustomerRequest $request, Customer $customer)
     {
-        $customer->fill($request->validated());
 
         DB::transaction(function () use ($request, $customer) {
-            $customer->save();
+            $customer->update($request->validated());
         });
 
         return new CustomerResource($customer);

@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Customer extends Model
 {
-    use HasFactory,SoftDeletes;
-    
+    use HasFactory, SoftDeletes;
+
     protected $fillable = [
         'user_id',
         'phone',
@@ -19,14 +19,14 @@ class Customer extends Model
         'default_payment_reference',
         'custom'
     ];
-    
+
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function order(){
+    public function order()
+    {
         return $this->hasMany(Order::class);
     }
-
 }
