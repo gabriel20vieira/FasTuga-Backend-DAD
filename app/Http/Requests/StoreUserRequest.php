@@ -14,7 +14,6 @@ class StoreUserRequest extends FormRequest
      */
     public function authorize()
     {
-        // TODO autorização
         return true;
     }
 
