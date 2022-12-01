@@ -18,7 +18,7 @@ class CustomersPolicy
      */
     public function viewAny(User $user)
     {
-        //
+        return $user->isManager();
     }
 
     /**
@@ -30,7 +30,7 @@ class CustomersPolicy
      */
     public function view(User $user, Customer $customer)
     {
-        //
+        return $user->isManager() || $user->customer->id == $customer->id;
     }
 
     /**
@@ -41,7 +41,7 @@ class CustomersPolicy
      */
     public function create(User $user)
     {
-        //
+        return $user->isAnonymous();
     }
 
     /**
@@ -53,7 +53,7 @@ class CustomersPolicy
      */
     public function update(User $user, Customer $customer)
     {
-        //
+        return $user->isManager() || $user->customer->id == $customer->id;
     }
 
     /**
@@ -65,7 +65,7 @@ class CustomersPolicy
      */
     public function delete(User $user, Customer $customer)
     {
-        //
+        return $user->isManager();
     }
 
     /**
@@ -77,7 +77,7 @@ class CustomersPolicy
      */
     public function restore(User $user, Customer $customer)
     {
-        //
+        return $user->isManager();
     }
 
     /**
@@ -89,6 +89,6 @@ class CustomersPolicy
      */
     public function forceDelete(User $user, Customer $customer)
     {
-        //
+        return $user->isManager();
     }
 }

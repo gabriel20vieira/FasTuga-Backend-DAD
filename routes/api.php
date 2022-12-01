@@ -1,11 +1,11 @@
 <?php
 
-use App\Http\Controllers\API\Auth\AuthenticationController;
-use App\Http\Controllers\API\CustomersController;
-use App\Http\Controllers\API\ImageController;
-use App\Http\Controllers\API\ProductsController;
-use App\Http\Controllers\API\UsersController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\API\ImageController;
+use App\Http\Controllers\API\UsersController;
+use App\Http\Controllers\API\ProductsController;
+use App\Http\Controllers\API\CustomersController;
+use App\Http\Controllers\API\Auth\AuthenticationController;
 
 /*
 |--------------------------------------------------------------------------

@@ -32,7 +32,7 @@ class UsersController extends Controller
      */
     public function index(Request $request)
     {
-        $builder = User::query();
+        $builder = User::query()->where('type', '!=', [UserType::CUSTOMER->value]);
         $builder->ofType($request->input('type'));
 
         return UserResource::collection($this->paginateBuilder($builder));
@@ -46,7 +46,6 @@ class UsersController extends Controller
      */
     public function store(StoreUserRequest $request)
     {
-
         $user = DB::transaction(function () use ($request) {
             $user = new User($request->safe()->except('password'));
             $user->password = bcrypt($request->password);
@@ -107,6 +106,7 @@ class UsersController extends Controller
     public function destroy(User $user)
     {
         DB::transaction(function () use ($user) {
+            $user->block();
             $user->delete();
         });
 

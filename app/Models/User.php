@@ -9,12 +9,13 @@ use Laravel\Passport\HasApiTokens;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -81,7 +82,7 @@ class User extends Authenticatable
      */
     public function isOfType(UserType $type)
     {
-        return $this->type == $type;
+        return $this->type == $type->value;
     }
 
     /**
@@ -142,5 +143,27 @@ class User extends Authenticatable
     public function isAny()
     {
         return true;
+    }
+
+    /**
+     * Blocks user
+     *
+     * @return void
+     */
+    public function block()
+    {
+        $this->blocked = 1;
+        $this->save();
+    }
+
+    /**
+     * Unblock user
+     *
+     * @return void
+     */
+    public function unblock()
+    {
+        $this->blocked = 0;
+        $this->save();
     }
 }

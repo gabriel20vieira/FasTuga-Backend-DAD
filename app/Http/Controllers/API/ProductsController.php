@@ -27,7 +27,6 @@ class ProductsController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', Product::class);
         return ProductResource::collection(Product::latest()->paginate(env('PAGINATE', 15)));
     }
 
@@ -68,7 +67,6 @@ class ProductsController extends Controller
      */
     public function update(UpdateProductRequest $request, Product $product)
     {
-
         DB::transaction(function () use ($request, $product) {
             $product->fill($request->validated());
             $product->save();
