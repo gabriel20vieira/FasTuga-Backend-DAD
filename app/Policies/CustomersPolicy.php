@@ -4,11 +4,12 @@ namespace App\Policies;
 
 use App\Models\User;
 use App\Models\Customer;
+use App\Traits\APIHybridAuthentication;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class CustomersPolicy
 {
-    use HandlesAuthorization;
+    use HandlesAuthorization, APIHybridAuthentication;
 
     /**
      * Determine whether the user can view any models.
@@ -16,9 +17,9 @@ class CustomersPolicy
      * @param  \App\Models\User  $user
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function viewAny(User $user)
+    public function viewAny(?User $user)
     {
-        return $user->isManager();
+        return $this->ifAuthenticated($user)->isManager();
     }
 
     /**
@@ -28,9 +29,10 @@ class CustomersPolicy
      * @param  \App\Models\Customer  $customer
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function view(User $user, Customer $customer)
+    public function view(?User $user, Customer $customer)
     {
-        return $user->isManager() || $user->customer->id == $customer->id;
+        return $this->ifAuthenticated($user)->isManager()
+            || ($this->ifAuthenticated($user)->isCustomer() && $this->ifAuthenticated($user)->customer->id == $customer->id);
     }
 
     /**
@@ -39,9 +41,9 @@ class CustomersPolicy
      * @param  \App\Models\User  $user
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function create(User $user)
+    public function create(?User $user)
     {
-        return $user->isAnonymous();
+        return $this->ifAuthenticated($user)->isAnonymous();
     }
 
     /**
@@ -51,9 +53,10 @@ class CustomersPolicy
      * @param  \App\Models\Customer  $customer
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, Customer $customer)
+    public function update(?User $user, Customer $customer)
     {
-        return $user->isManager() || $user->customer->id == $customer->id;
+        return $this->ifAuthenticated($user)->isManager()
+            || ($this->ifAuthenticated($user)->isCustomer() && $this->ifAuthenticated($user)->customer->id == $customer->id);
     }
 
     /**
@@ -63,9 +66,9 @@ class CustomersPolicy
      * @param  \App\Models\Customer  $customer
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Customer $customer)
+    public function delete(?User $user, Customer $customer)
     {
-        return $user->isManager();
+        return $this->ifAuthenticated($user)->isManager();
     }
 
     /**
@@ -75,9 +78,9 @@ class CustomersPolicy
      * @param  \App\Models\Customer  $customer
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function restore(User $user, Customer $customer)
+    public function restore(?User $user, Customer $customer)
     {
-        return $user->isManager();
+        return $this->ifAuthenticated($user)->isManager();
     }
 
     /**
@@ -87,8 +90,8 @@ class CustomersPolicy
      * @param  \App\Models\Customer  $customer
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function forceDelete(User $user, Customer $customer)
+    public function forceDelete(?User $user, Customer $customer)
     {
-        return $user->isManager();
+        return $this->ifAuthenticated($user)->isManager();
     }
 }

@@ -2,12 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Facades\Redirect;
+use App\Traits\APIHybridAuthentication;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Bus\DispatchesJobs;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Foundation\Validation\ValidatesRequests;

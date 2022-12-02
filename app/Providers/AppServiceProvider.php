@@ -34,6 +34,14 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
+        Validator::extend('points', function ($attribute, $value, $params, $validator) {
+            return $value % 10 == 0;
+        });
+
+        Validator::extend('user_points', function ($attribute, $value, $params, $validator) {
+            return ((auth('api')->hasUser() && auth('api')->user()->customer != null) ? auth('api')->user()->customer->points - $value > 0 : true);
+        });
+
         Validator::extend('nif', function ($attribute, $value, $params, $validator) {
             if (strlen($value) != 9) {
                 return false;

@@ -2,10 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Types\OrderStatusEnum;
 use App\Models\Types\PaymentType;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreCustomerRequest extends FormRequest
+class StoreOrderRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,22 +26,20 @@ class StoreCustomerRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            'user_id' => 'required|exists:users,id|unique:customers,user_id',
-            'phone' => 'required|unique:customers,phone|string',
-            'points' => 'integer',
-            'nif' => 'required|nif',
-            'default_payment_type' => 'required|in:' . PaymentType::toRule(),
-            'default_payment_reference' => 'required|string',
+            'points_used_to_pay' => 'integer|points|user_points',
+            'items' => 'required|array',
+            'items.*' => 'required|exists:products,id'
         ];
 
         return $rules;
     }
 
+
     public function messages()
     {
         return [
-            'nif.nif' => 'The :attribute is not valid.',
-            'default_payment_type.in' => 'The selected default payment type must be either ' . PaymentType::toString()
+            'points_used_to_pay.points' => 'The amount of points given must be a multiple of 10',
+            'points_used_to_pay.user_points' => 'The user does not have that many points.'
         ];
     }
 }

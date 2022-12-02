@@ -6,6 +6,9 @@ use App\Http\Controllers\API\UsersController;
 use App\Http\Controllers\API\ProductsController;
 use App\Http\Controllers\API\CustomersController;
 use App\Http\Controllers\API\Auth\AuthenticationController;
+use App\Http\Controllers\API\HomeController;
+use App\Http\Controllers\API\OrdersController;
+use App\Http\Controllers\API\PaymentsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,35 +16,38 @@ use App\Http\Controllers\API\Auth\AuthenticationController;
 |--------------------------------------------------------------------------
 */
 
+// ─── Public Routes ───────────────────────────────────────────────────────────
 
-Route::group([
-    'middleware' => [
-        'response.json', // 'throttle:20,10'
-    ]
-], function () {
 
-    // ! AUTHENTICATION
-    Route::post('login', [AuthenticationController::class, 'login'])->name('login');
-    Route::post('register', [AuthenticationController::class, 'register'])->name('register');
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/logged', [HomeController::class, 'logged'])->name('logged');
 
-    // ! PUBLIC
-    Route::apiResource('products', ProductsController::class);
-    Route::get('/image/{image}', [ImageController::class, 'show'])->name('image.show');
+Route::post('login', [AuthenticationController::class, 'login'])->name('login');
+Route::post('register', [AuthenticationController::class, 'register'])->name('register');
 
-    Route::group(['middleware' => 'auth:api'], function () {
+Route::get('/image/{image}', [ImageController::class, 'show'])->name('image.show');
 
-        // ! AUTHENTICATION
-        Route::post('logout', [AuthenticationController::class, 'logout'])->name('logout');
 
-        // ! USERS
-        // The follow must be called by order of explicity, otherwise the route will be overrided
-        Route::get('users/me', [UsersController::class, 'me']);
-        Route::apiResource('users', UsersController::class);
+// ─── Hybrid Access ───────────────────────────────────────────────────────────
 
-        // ! CUSTOMERS
-        Route::apiResource('customers', CustomersController::class);
+Route::apiResource('products', ProductsController::class);
 
-        // ! IMAGE
-        Route::post('/image', [ImageController::class, 'upload'])->name('image.upload');
-    });
+Route::apiResource('customers', CustomersController::class);
+
+Route::apiResource('orders', OrdersController::class);
+
+Route::get('payments', [PaymentsController::class, 'index']);
+Route::post('payments/{reference}', [PaymentsController::class, 'pay']);
+
+
+// ─── With Full Authentication ────────────────────────────────────────────────
+
+Route::group(['middleware' => 'auth:api'], function () {
+
+    Route::post('logout', [AuthenticationController::class, 'logout'])->name('logout');
+
+    Route::get('users/me', [UsersController::class, 'me']);
+    Route::apiResource('users', UsersController::class);
+
+    Route::post('/image', [ImageController::class, 'upload'])->name('image.upload');
 });

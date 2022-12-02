@@ -9,7 +9,7 @@ enum PaymentType: string
 {
     use ToArray, ToString;
 
-    case VISA = 'Visa';
-    case PAYPAL = 'PayPal';
-    case MBWAY = 'MbWay';
+    case VISA = 'visa';
+    case PAYPAL = 'paypal';
+    case MBWAY = 'mbway';
 }

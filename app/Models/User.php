@@ -60,6 +60,16 @@ class User extends Authenticatable
     }
 
     /**
+     * Associated customer orders
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function orders()
+    {
+        return $this->customer->orders();
+    }
+
+    /**
      * Type selection
      *
      * @param \Illuminate\Database\Eloquent\Builder $builder
@@ -73,7 +83,6 @@ class User extends Authenticatable
         }
     }
 
-
     /**
      * Checks user type
      *
@@ -82,7 +91,7 @@ class User extends Authenticatable
      */
     public function isOfType(UserType $type)
     {
-        return $this->type == $type->value;
+        return ($this->type ?? null) == $type->value;
     }
 
     /**
@@ -132,7 +141,7 @@ class User extends Authenticatable
      */
     public function isAnonymous()
     {
-        return auth()->user() == null;
+        return auth('api')->user() == null;
     }
 
     /**
@@ -165,5 +174,15 @@ class User extends Authenticatable
     {
         $this->blocked = 0;
         $this->save();
+    }
+
+    /**
+     * Checks if user is blocked
+     *
+     * @return boolean
+     */
+    public function isBlocked()
+    {
+        return  $this->blocked == 1;
     }
 }

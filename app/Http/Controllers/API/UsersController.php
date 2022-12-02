@@ -49,6 +49,7 @@ class UsersController extends Controller
         $user = DB::transaction(function () use ($request) {
             $user = new User($request->safe()->except('password'));
             $user->password = bcrypt($request->password);
+            $user->unblock();
             $user->save();
             return $user;
         });
@@ -106,7 +107,7 @@ class UsersController extends Controller
     public function destroy(User $user)
     {
         DB::transaction(function () use ($user) {
-            $user->block();
+            $user->customer()->delete();
             $user->delete();
         });
 

@@ -18,10 +18,10 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
-            'photo_url' => $this->photo_url,
+            'photo_url' => $this->photo_url ?? null,
             'type' => $this->type,
-            'blocked' => $this->blocked,
-            'customer' => new CustomerResource($this->customer)
+            'blocked' => $this->blocked == 0,
+            // 'customer' => new CustomerResource($this->customer)
         ];
     }
 }

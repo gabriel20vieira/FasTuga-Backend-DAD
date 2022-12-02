@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CustomerResource;
 use App\Http\Requests\StoreCustomerRequest;
+use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateCustomerRequest;
 
 class CustomersController extends Controller
@@ -38,8 +39,11 @@ class CustomersController extends Controller
      */
     public function store(StoreCustomerRequest $request)
     {
+        dd(request());
+        $user = (new UsersController())->store(request());
         $customer = DB::transaction(function () use ($request) {
-            $customer = new Customer($request->validated());
+            $customer = new Customer($request->safe()->except('points'));
+            $customer->points = 0;
             $customer->save();
             return $customer;
         });
@@ -84,6 +88,7 @@ class CustomersController extends Controller
     public function destroy(Customer $customer)
     {
         DB::transaction(function () use ($customer) {
+            $customer->user()->delete();
             $customer->delete();
         });
 
