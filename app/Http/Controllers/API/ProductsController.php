@@ -27,7 +27,9 @@ class ProductsController extends Controller
      */
     public function index()
     {
-        return ProductResource::collection(Product::latest()->paginate(env('PAGINATE', 15)));
+        return ProductResource::collection(
+            $this->paginateBuilder(Product::query()->latest())
+        );
     }
 
     /**

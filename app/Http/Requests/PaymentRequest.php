@@ -2,12 +2,10 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Types\OrderStatus;
-use Illuminate\Validation\Rule;
-use App\Models\Types\OrderStatusEnum;
+use App\Models\Types\PaymentType;
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateOrderRequest extends FormRequest
+class PaymentRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -16,7 +14,7 @@ class UpdateOrderRequest extends FormRequest
      */
     public function authorize()
     {
-        return true;
+        return false;
     }
 
     /**
@@ -26,10 +24,11 @@ class UpdateOrderRequest extends FormRequest
      */
     public function rules()
     {
-        $rules = [
-            'status' => 'required|in:' . OrderStatus::toRule()
+        return [
+            'payment' => 'required',
+            'payment.type' => 'required|in:' . PaymentType::toRule(),
+            'payment.reference' => 'required|string',
+            'payment.value' => 'required|numeric'
         ];
-
-        return $rules;
     }
 }

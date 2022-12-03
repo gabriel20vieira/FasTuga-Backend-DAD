@@ -21,7 +21,7 @@ class UserResource extends JsonResource
             'photo_url' => $this->photo_url ?? null,
             'type' => $this->type,
             'blocked' => $this->blocked == 0,
-            // 'customer' => new CustomerResource($this->customer)
+            'customer' => new CustomerResource($this->customer)
         ];
     }
 }

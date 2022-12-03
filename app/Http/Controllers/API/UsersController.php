@@ -12,6 +12,7 @@ use Illuminate\Pagination\Paginator;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Foundation\Http\FormRequest;
 
 class UsersController extends Controller
 {
@@ -32,7 +33,9 @@ class UsersController extends Controller
      */
     public function index(Request $request)
     {
-        $builder = User::query()->where('type', '!=', [UserType::CUSTOMER->value]);
+        $builder = User::query()
+            ->with('customer');
+        // ->where('type', '!=', [UserType::CUSTOMER->value]); // In case is needed
         $builder->ofType($request->input('type'));
 
         return UserResource::collection($this->paginateBuilder($builder));
@@ -46,13 +49,7 @@ class UsersController extends Controller
      */
     public function store(StoreUserRequest $request)
     {
-        $user = DB::transaction(function () use ($request) {
-            $user = new User($request->safe()->except('password'));
-            $user->password = bcrypt($request->password);
-            $user->unblock();
-            $user->save();
-            return $user;
-        });
+        $user = self::createUser($request);
 
         return new UserResource($user);
     }
@@ -123,5 +120,24 @@ class UsersController extends Controller
     public function me(Request $request)
     {
         return new UserResource($request->user());
+    }
+
+    /**
+     * Stores users (static to allow access from customers)
+     *
+     * @param StoreUserRequest|FormRequest $request
+     * @return void
+     */
+    public static function createUser(StoreUserRequest|FormRequest $request)
+    {
+        $user = DB::transaction(function () use ($request) {
+            $user = new User($request->safe()->except('password'));
+            $user->password = bcrypt($request->password);
+            $user->unblock();
+            $user->save();
+            return $user;
+        });
+
+        return $user;
     }
 }

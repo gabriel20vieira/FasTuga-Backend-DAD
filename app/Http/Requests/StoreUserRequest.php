@@ -24,18 +24,26 @@ class StoreUserRequest extends FormRequest
      */
     public function rules()
     {
-        return [
+        $rules = [
             'name' => 'required',
             'email' => 'required|unique:users,email|email',
             'password' => 'required',
             'type' => 'required|in:' . UserType::toRule(),
         ];
+
+        $rules = array_merge($rules, (new StoreImageRequest())->rules());
+
+        return $rules;
     }
 
     public function messages()
     {
-        return [
+        $messages = [
             'type.in' => "The selected user type is invalid. One is required: " . UserType::toString()
         ];
+
+        $messages = array_merge($messages, (new StoreImageRequest())->messages());
+
+        return $messages;
     }
 }

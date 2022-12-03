@@ -24,11 +24,11 @@ class ImageController extends Controller
 
         $path = $this->storeImage($request, $request->input('path'), 'image');
 
-        $image = $path; {
-            $image = str_replace("\\", "", $path);
-            $image = explode("/", $image);
-            $image = end($image);
-        }
+        $image = $path;
+        $image = str_replace("\\", "", $path);
+        $image = explode("/", $image);
+        $image = end($image);
+
 
         return [
             'image' => $image,

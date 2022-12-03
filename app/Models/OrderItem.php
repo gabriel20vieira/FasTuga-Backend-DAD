@@ -21,6 +21,11 @@ class OrderItem extends Model
         'notes'
     ];
 
+    public function getIdentificationAttribute()
+    {
+        return $this->order->ticket_number . "-" . $this->order_local_number;
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

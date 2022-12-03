@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Traits\APIHybridAuthentication;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Bus\DispatchesJobs;
+use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -17,18 +19,22 @@ class Controller extends BaseController
     /**
      * Undocumented function
      *
-     * @param Builder $paginator
+     * @param Builder|Relation $paginator
      * @return void
      */
-    public function paginateBuilder(Builder $paginator, $paginate = null)
+    public function paginateBuilder(Builder|Relation $builder, $paginate = null)
     {
-        $paginator = $paginator->latest()->paginate($paginate ?? env('PAGINATE', 15))->withQueryString();
+        // if ($builder instanceof Relation) {
+        //     $builder = $builder->query();
+        // }
 
-        if ($paginator->isEmpty() && !$paginator->onFirstPage()) {
-            $this->redirect($paginator->url(1));
+        $builder = $builder->latest()->paginate($paginate ?? env('PAGINATE', 15))->withQueryString();
+
+        if ($builder->isEmpty() && !$builder->onFirstPage()) {
+            $this->redirect($builder->url(1));
         }
 
-        return $paginator;
+        return $builder;
     }
 
     /**
@@ -39,6 +45,31 @@ class Controller extends BaseController
      */
     public function redirect(string $url)
     {
-        throw new HttpResponseException(redirect($url));
+        $this->sendResponseNow(redirect($url));
+    }
+
+    /**
+     * Sends response to client on call
+     *
+     * @param Response $response
+     * @return void
+     */
+    public function sendResponseNow(Response $response)
+    {
+        throw new HttpResponseException($response);
+    }
+
+    /**
+     * Sends response on condition
+     *
+     * @param boolean $condition
+     * @param Response $response
+     * @return void
+     */
+    public function sendResponseNowIf(bool $condition, Response $response)
+    {
+        if ($condition) {
+            $this->sendResponseNow($response);
+        }
     }
 }

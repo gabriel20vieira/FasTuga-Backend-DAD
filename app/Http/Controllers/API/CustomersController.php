@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\API;
 
 use App\Models\Customer;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreUserRequest;
 use App\Http\Resources\CustomerResource;
 use App\Http\Requests\StoreCustomerRequest;
-use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateCustomerRequest;
+use App\Http\Controllers\API\UsersController;
+use App\Http\Resources\UserResource;
 
 class CustomersController extends Controller
 {
@@ -28,7 +31,9 @@ class CustomersController extends Controller
      */
     public function index()
     {
-        return CustomerResource::collection(Customer::latest()->paginate(env('PAGINATE', 15)));
+        return CustomerResource::collection(
+            Customer::latest()->paginate(env('PAGINATE', 15))
+        );
     }
 
     /**
@@ -39,16 +44,17 @@ class CustomersController extends Controller
      */
     public function store(StoreCustomerRequest $request)
     {
-        dd(request());
-        $user = (new UsersController())->store(request());
-        $customer = DB::transaction(function () use ($request) {
-            $customer = new Customer($request->safe()->except('points'));
+        $user = UsersController::createUser($request);
+        $customer = DB::transaction(function () use ($request, $user) {
+            $customer = new Customer($request->safe()->except(['points', 'default_payment_reference', 'user_id']));
+            $customer->user()->associate($user);
             $customer->points = 0;
+            $customer->default_payment_reference = Str::random();
             $customer->save();
             return $customer;
         });
 
-        return new CustomerResource($customer);
+        return new UserResource($customer->user);
     }
 
     /**

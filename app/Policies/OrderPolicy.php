@@ -31,7 +31,8 @@ class OrderPolicy
      */
     public function view(?User $user, Order $order)
     {
-        return $this->ifAuthenticated($user)->isManager() || $order->user()->id == $this->ifAuthenticated($user)->id;
+        return $this->ifAuthenticated($user)->isManager()
+            || ($order->customer ? $order->customer->user->id == $this->ifAuthenticated($user)->id : false);
     }
 
     /**
@@ -42,7 +43,8 @@ class OrderPolicy
      */
     public function create(?User $user)
     {
-        return $this->ifAuthenticated($user)->isCustomer() || $this->ifAuthenticated($user)->isAnonymous();
+        return $this->ifAuthenticated($user)->isCustomer()
+            || $this->ifAuthenticated($user)->isAnonymous();
     }
 
     /**
@@ -54,7 +56,7 @@ class OrderPolicy
      */
     public function update(?User $user, Order $order)
     {
-        //
+        return $this->ifAuthenticated($user)->isManager();
     }
 
     /**
@@ -64,9 +66,9 @@ class OrderPolicy
      * @param  \App\Models\Order  $order
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function delete(User $user, Order $order)
+    public function delete(?User $user, Order $order)
     {
-        //
+        return $this->ifAuthenticated($user)->isManager();
     }
 
     /**
@@ -76,9 +78,9 @@ class OrderPolicy
      * @param  \App\Models\Order  $order
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function restore(User $user, Order $order)
+    public function restore(?User $user, Order $order)
     {
-        //
+        return $this->ifAuthenticated($user)->isManager();
     }
 
     /**
@@ -88,8 +90,8 @@ class OrderPolicy
      * @param  \App\Models\Order  $order
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function forceDelete(User $user, Order $order)
+    public function forceDelete(?User $user, Order $order)
     {
-        //
+        return $this->ifAuthenticated($user)->isManager();
     }
 }

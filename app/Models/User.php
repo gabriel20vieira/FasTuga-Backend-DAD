@@ -69,6 +69,24 @@ class User extends Authenticatable
         return $this->customer->orders();
     }
 
+    public function getPaymentAttribute()
+    {
+        return $this->orders()
+            ->getQuery()
+            ->latest()
+            ->whereBetween('created_at', [now()->subMinutes(env('PAYMENT_TIME', 5)), now()])
+            ->first();
+    }
+
+    public function getPaymentsAttribute()
+    {
+        return $this->orders()
+            ->getQuery()
+            ->latest()
+            ->whereBetween('created_at', [now()->subMinutes(env('PAYMENT_TIME', 5)), now()])
+            ->get();
+    }
+
     /**
      * Type selection
      *

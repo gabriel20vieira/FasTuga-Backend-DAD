@@ -25,13 +25,13 @@ class StoreCustomerRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            'user_id' => 'required|exists:users,id|unique:customers,user_id',
             'phone' => 'required|unique:customers,phone|string',
-            'points' => 'integer',
-            'nif' => 'required|nif',
-            'default_payment_type' => 'required|in:' . PaymentType::toRule(),
-            'default_payment_reference' => 'required|string',
+            'nif' => 'required|integer',
+            // 'nif' => 'required|nif',
+            'default_payment_type' => 'required|in:' . PaymentType::toRule()
         ];
+
+        $rules = array_merge($rules, (new StoreUserRequest())->rules());
 
         return $rules;
     }

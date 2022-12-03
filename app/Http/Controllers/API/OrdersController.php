@@ -10,10 +10,15 @@ use App\Models\Types\OrderStatus;
 use App\Models\Types\ProductType;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Http;
+use App\Http\Requests\PaymentRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Types\OrderItemStatus;
 use App\Http\Requests\StoreOrderRequest;
 use App\Http\Requests\UpdateOrderRequest;
+use App\Models\Types\PaymentType;
+use Exception;
+use Faker\Provider\ar_EG\Payment;
 use Illuminate\Foundation\Http\FormRequest;
 
 class OrdersController extends Controller
@@ -34,11 +39,16 @@ class OrdersController extends Controller
      */
     public function index()
     {
+        $builder = Order::query();
         if (auth('api')->user()->isManager()) {
-            return OrderResource::collection(Order::latest()->paginate());
+            $builder = Order::with('items')->latest();
+        } else {
+            $builder = auth('api')->user()->orders()->with('items')->latest();
         }
 
-        return OrderResource::collection(auth('api')->user()->orders);
+        return OrderResource::collection(
+            $this->paginateBuilder($builder)
+        );
     }
 
     /**
@@ -52,29 +62,43 @@ class OrdersController extends Controller
         $user = auth('api')->user() ?? null;
 
         $order = DB::transaction(function () use ($request, $user) {
-            $last_ticket = Order::latest()->first()->ticket_number;
-            $ticket_number = $last_ticket + 1 > 99 ? 1 : $last_ticket + 1;
 
-            $order = new Order($user ? $request->only('points_used_to_pay') : []);
+            $order = new Order($user ? $request->safe()->only('points_used_to_pay') : []);
+            $order->total_price = Order::calculateTotalPrice($request);
 
-            $price_discount = (($order->points_used_to_pay ?? 0) * 0.5);
+            $payment = $order->makePayment(
+                $user ? $user->customer->default_payment_type : $request->payment_type,
+                $user ? $user->customer->default_payment_reference : $request->payment_reference,
+                $order->total_price
+            );
+
+            $this->sendResponseNowIf(
+                $payment->status() != 201,
+                response()->json(
+                    json_decode($payment->body()),
+                    $payment->status()
+                )
+            );
+
+            $ticket_number = Order::getNextTicket();
+            $price_discount = Order::getPriceDiscount($order->points_used_to_pay);
+
             $order->total_paid_with_points = $price_discount;
-
             $order->ticket_number = $ticket_number;
             $order->status = OrderStatus::PREPARING->value;
-
-            if ($user) {
-                $order->customer()->associate($user->customer);
-            }
-
-            $order->payment_reference = Str::random();
             $order->date = Carbon::now()->toDateString();
-            $order->total_price = $this->calculateTotalPrice($request);
+
 
             if ($user) {
+                $order->points_gained = Order::calculateGainedPoints($order->total_price);
                 $order->total_paid = ($order->total_price - $price_discount);
-                $order->points_gained = floor($order->total_price * 0.1);
                 $user->customer->points -= $order->points_used_to_pay;
+                $order->payment_type = $user->customer->default_payment_type;
+                $order->payment_reference = $user->customer->default_payment_reference;
+                $order->customer()->associate($user->customer)->save();
+            } else {
+                $order->payment_type = $request->payment_type;
+                $order->payment_reference = $request->payment_reference;
             }
 
             $order->save();
@@ -109,7 +133,19 @@ class OrdersController extends Controller
     {
 
         DB::transaction(function () use ($request, $order) {
+
             $order->fill($request->validated());
+
+            $refund = $order->makeRefund();
+
+            $this->sendResponseNowIf(
+                $refund->status() != 201,
+                response()->json(
+                    json_decode($refund->body()),
+                    $refund->status()
+                )
+            );
+
             $order->save();
         });
 
@@ -125,6 +161,7 @@ class OrdersController extends Controller
     public function destroy(Order $order)
     {
         DB::transaction(function () use ($order) {
+            $order->items()->delete();
             $order->delete();
         });
 
@@ -152,22 +189,5 @@ class OrdersController extends Controller
                 'price' => $product->price,
             ]);
         }
-    }
-
-    /**
-     * Calculated the total price of the items
-     *
-     * @param FormRequest $request
-     * @return float
-     */
-    private function calculateTotalPrice(FormRequest $request)
-    {
-        $total_price = 0;
-        foreach ($request->items as $item) {
-            /** @var Product $product */
-            $product = Product::findOrFail($item);
-            $total_price += $product->price;
-        }
-        return $total_price;
     }
 }

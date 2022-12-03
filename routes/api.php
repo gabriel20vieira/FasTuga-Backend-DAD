@@ -36,10 +36,6 @@ Route::apiResource('customers', CustomersController::class);
 
 Route::apiResource('orders', OrdersController::class);
 
-Route::get('payments', [PaymentsController::class, 'index']);
-Route::post('payments/{reference}', [PaymentsController::class, 'pay']);
-
-
 // ─── With Full Authentication ────────────────────────────────────────────────
 
 Route::group(['middleware' => 'auth:api'], function () {

@@ -2,8 +2,9 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Types\OrderStatusEnum;
 use App\Models\Types\PaymentType;
+use App\Http\Requests\PaymentRequest;
+use App\Models\Types\OrderStatusEnum;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreOrderRequest extends FormRequest
@@ -28,18 +29,36 @@ class StoreOrderRequest extends FormRequest
         $rules = [
             'points_used_to_pay' => 'integer|points|user_points',
             'items' => 'required|array',
-            'items.*' => 'required|exists:products,id'
+            'items.*' => 'required|exists:products,id',
         ];
+
+        $rules = array_merge($rules, (new PaymentRequest())->rules());
+
+        if (!auth('api')->hasUser()) {
+            $rules = array_merge($rules, [
+                'payment_type' => 'required|in:' . PaymentType::toRule(),
+                'payment_reference' => 'required|string'
+            ]);
+        }
 
         return $rules;
     }
 
 
+    /**
+     * Messages for custom rules
+     *
+     * @return array
+     */
     public function messages()
     {
-        return [
+        $messages = [
             'points_used_to_pay.points' => 'The amount of points given must be a multiple of 10',
             'points_used_to_pay.user_points' => 'The user does not have that many points.'
         ];
+
+        $messages = array_merge($messages, (new PaymentRequest())->messages());
+
+        return $messages;
     }
 }

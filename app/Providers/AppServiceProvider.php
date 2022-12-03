@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Types\PaymentType;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Validator;
 use Intervention\Image\ImageManagerStatic;
@@ -39,7 +40,9 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Validator::extend('user_points', function ($attribute, $value, $params, $validator) {
-            return ((auth('api')->hasUser() && auth('api')->user()->customer != null) ? auth('api')->user()->customer->points - $value > 0 : true);
+            return ((auth('api')->hasUser()
+                && (auth('api')->user()->isManager() || auth('api')->user()->customer != null) ? auth('api')->user()->customer->points - $value > 0 : true)
+            );
         });
 
         Validator::extend('nif', function ($attribute, $value, $params, $validator) {
