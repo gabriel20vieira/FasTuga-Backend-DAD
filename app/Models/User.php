@@ -69,6 +69,11 @@ class User extends Authenticatable
         return $this->customer->orders();
     }
 
+    /**
+     * Get user latest payment
+     *
+     * @return void
+     */
     public function getPaymentAttribute()
     {
         return $this->orders()
@@ -78,6 +83,11 @@ class User extends Authenticatable
             ->first();
     }
 
+    /**
+     * Get user valid payments
+     *
+     * @return void
+     */
     public function getPaymentsAttribute()
     {
         return $this->orders()
