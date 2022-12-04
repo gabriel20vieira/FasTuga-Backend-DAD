@@ -28,11 +28,12 @@ class ProductsController extends Controller
      */
     public function index(Request $request)
     {
+
         $builder = Product::query();
         $builder->ofType($request->input('type'));
 
         return ProductResource::collection(
-            $this->paginateBuilder($builder->orderBy('name', 'ASC'))
+            $this->paginateBuilder($builder->orderBy('name', 'ASC'), $request->input('paginate'))
         );
     }
 
