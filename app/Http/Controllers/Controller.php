@@ -24,10 +24,7 @@ class Controller extends BaseController
      */
     public function paginateBuilder(Builder|Relation $builder, $paginate = null)
     {
-        // if ($builder instanceof Relation) {
-        //     $builder = $builder->query();
-        // }
-
+        $paginate = is_numeric($paginate) ? $paginate : null;
         $builder = $builder->latest()->paginate($paginate ?? env('PAGINATE', 15))->withQueryString();
 
         if ($builder->isEmpty() && !$builder->onFirstPage()) {

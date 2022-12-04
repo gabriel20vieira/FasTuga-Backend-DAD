@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Models\Product;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductResource;
@@ -25,10 +26,14 @@ class ProductsController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
+
+        $builder = Product::query();
+        $builder->ofType($request->input('type'));
+
         return ProductResource::collection(
-            $this->paginateBuilder(Product::query()->latest())
+            $this->paginateBuilder($builder->orderBy('name', 'ASC'), $request->input('paginate'))
         );
     }
 
