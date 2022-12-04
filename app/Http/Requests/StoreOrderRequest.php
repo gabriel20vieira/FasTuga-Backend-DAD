@@ -34,12 +34,12 @@ class StoreOrderRequest extends FormRequest
 
         $rules = array_merge($rules, (new PaymentRequest())->rules());
 
-        if (!auth('api')->hasUser()) {
-            $rules = array_merge($rules, [
-                'payment_type' => 'required|in:' . PaymentType::toRule(),
-                'payment_reference' => 'required|string'
-            ]);
-        }
+        // if (!auth('api')->hasUser()) {
+        //     $rules = array_merge($rules, [
+        //         'payment_type' => 'required|in:' . PaymentType::toRule(),
+        //         'payment_reference' => 'required|string'
+        //     ]);
+        // }
 
         return $rules;
     }

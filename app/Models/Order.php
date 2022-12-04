@@ -7,6 +7,7 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Database\Eloquent\Model;
 use App\Http\Requests\StoreOrderRequest;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -61,6 +62,27 @@ class Order extends Model
     }
 
     /**
+     * Payment type getter mutator
+     *
+     * @return string
+     */
+    public function getPaymentTypeAttribute($value)
+    {
+        return strtolower($value);
+    }
+
+    /**
+     * Payment type setter mutator
+     *
+     * @param string $value
+     * @return void
+     */
+    public function setPaymentTypeAttribute($value)
+    {
+        $this->attributes['payment_type'] = strtolower($value);
+    }
+
+    /**
      * Retrieves the next ticket number
      *
      * @return int
@@ -78,7 +100,7 @@ class Order extends Model
      * @param float $points_used_to_pay
      * @return float
      */
-    public static function getPriceDiscount(float $points_used_to_pay)
+    public static function getPriceDiscount($points_used_to_pay)
     {
         return (($points_used_to_pay ?? 0) * 0.5);
     }

@@ -28,7 +28,7 @@ class PaymentRequest extends FormRequest
             'payment' => 'required',
             'payment.type' => 'required|in:' . PaymentType::toRule(),
             'payment.reference' => 'required|string',
-            'payment.value' => 'required|numeric'
+            // 'payment.value' => 'required|numeric'
         ];
     }
 }

@@ -63,12 +63,12 @@ class OrdersController extends Controller
 
         $order = DB::transaction(function () use ($request, $user) {
 
-            $order = new Order($user ? $request->safe()->only('points_used_to_pay') : []);
+            $order = new Order();
             $order->total_price = Order::calculateTotalPrice($request);
 
             $payment = $order->makePayment(
-                $user ? $user->customer->default_payment_type : $request->payment_type,
-                $user ? $user->customer->default_payment_reference : $request->payment_reference,
+                $user ? $user->customer->default_payment_type : $request->input('payment.type'),
+                $user ? $user->customer->default_payment_reference : $request->input('payment.reference'),
                 $order->total_price
             );
 
@@ -81,25 +81,24 @@ class OrdersController extends Controller
             );
 
             $ticket_number = Order::getNextTicket();
-            $price_discount = Order::getPriceDiscount($order->points_used_to_pay);
-
-            $order->total_paid_with_points = $price_discount;
             $order->ticket_number = $ticket_number;
+
             $order->status = OrderStatus::PREPARING->value;
             $order->date = Carbon::now()->toDateString();
+            $order->points_used_to_pay = $user ? $request->input('points_used_to_pay') : 0;
 
+            $price_discount = $user ? Order::getPriceDiscount($order->points_used_to_pay) : 0;
+            $order->total_paid_with_points = $user ? $price_discount : 0;
+            $order->total_paid = ($order->total_price - $price_discount);
+            $order->points_gained = $user ? Order::calculateGainedPoints($order->total_price) : 0;
 
             if ($user) {
-                $order->points_gained = Order::calculateGainedPoints($order->total_price);
-                $order->total_paid = ($order->total_price - $price_discount);
                 $user->customer->points -= $order->points_used_to_pay;
-                $order->payment_type = $user->customer->default_payment_type;
-                $order->payment_reference = $user->customer->default_payment_reference;
                 $order->customer()->associate($user->customer)->save();
-            } else {
-                $order->payment_type = $request->payment_type;
-                $order->payment_reference = $request->payment_reference;
             }
+
+            $order->payment_type = $user ? $user->customer->default_payment_type : $request->input('payment.type');
+            $order->payment_reference = $user ? $user->customer->default_payment_reference : $request->input('payment.reference');
 
             $order->save();
 
