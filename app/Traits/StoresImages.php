@@ -10,6 +10,10 @@ trait StoresImages
 {
     private function storeImage(FormRequest $request, $folder, $string)
     {
+        if ($request->{$string} == null) {
+            return null;
+        }
+
         if (!preg_match("/^\/.+/m", $folder)) {
             $folder = "/" . $folder;
         }

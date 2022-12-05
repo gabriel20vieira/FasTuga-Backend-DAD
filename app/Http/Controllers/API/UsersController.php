@@ -11,11 +11,14 @@ use App\Http\Resources\UserResource;
 use Illuminate\Pagination\Paginator;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Traits\StoresImages;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UsersController extends Controller
 {
+
+    use StoresImages;
 
     /**
      * Authorization for this resource
@@ -134,7 +137,15 @@ class UsersController extends Controller
             $user = new User($request->safe()->except('password'));
             $user->password = bcrypt($request->password);
             $user->unblock();
+
+            $path = (new self)->storeImage($request, 'fotos', 'image');
+            $image = $path;
+            $image = str_replace("\\", "", $path);
+            $image = explode("/", $image);
+            $image = end($image);
+            $user->photo_url = $image;
             $user->save();
+
             return $user;
         });
 

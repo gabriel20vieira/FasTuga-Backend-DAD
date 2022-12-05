@@ -29,9 +29,8 @@ class StoreUserRequest extends FormRequest
             'email' => 'required|unique:users,email|email',
             'password' => 'required',
             'type' => 'required|in:' . UserType::toRule(),
+            'image' => 'imageable'
         ];
-
-        $rules = array_merge($rules, (new StoreImageRequest())->rules());
 
         return $rules;
     }

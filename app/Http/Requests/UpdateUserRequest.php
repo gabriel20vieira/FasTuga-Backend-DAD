@@ -31,6 +31,7 @@ class UpdateUserRequest extends FormRequest
                 Rule::unique('users')->ignore($this->user),
             ],
             'type' => 'in:' . UserType::toRule(),
+            'image' => 'imageable'
         ];
     }
 }
