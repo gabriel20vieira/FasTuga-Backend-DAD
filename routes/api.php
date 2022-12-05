@@ -45,6 +45,4 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('change-password', [UsersController::class, 'changePassword']);
     Route::get('users/me', [UsersController::class, 'me']);
     Route::apiResource('users', UsersController::class);
-
-    Route::post('/image', [ImageController::class, 'upload'])->name('image.upload');
 });

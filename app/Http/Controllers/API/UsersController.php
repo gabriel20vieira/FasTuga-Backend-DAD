@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use Illuminate\Pagination\Paginator;
 use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserPasswordRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Traits\StoresImages;
 use Illuminate\Database\Eloquent\Collection;
@@ -36,12 +37,9 @@ class UsersController extends Controller
      */
     public function index(Request $request)
     {
-        $builder = User::query()
-            ->with('customer');
-        // ->where('type', '!=', [UserType::CUSTOMER->value]); // In case is needed
+        $builder = User::query()->with('customer');
         $builder->ofType($request->input('type'));
-
-        return UserResource::collection($this->paginateBuilder($builder), $request->input('size'));
+        return UserResource::collection($this->paginateBuilder($builder, $request->input('size')));
     }
 
     /**
@@ -53,7 +51,6 @@ class UsersController extends Controller
     public function store(StoreUserRequest $request)
     {
         $user = self::createUser($request);
-
         return new UserResource($user);
     }
 
@@ -78,19 +75,10 @@ class UsersController extends Controller
     public function update(UpdateUserRequest $request, User $user)
     {
         DB::transaction(function () use ($request, $user) {
-            $user->update($request->safe()->except(['password', 'password_confirmation']));
+            $user->update($request->safe()->except(['password', 'password_confirmation', 'image']));
+            $image = (new self)->storeImage($request, 'fotos', 'image');
+            $user->photo_url = $image ?? $user->photo_url;
             $user->save();
-
-            $path = (new self)->storeImage($request, 'fotos', 'image');
-            if ($path) {
-                $image = $path;
-                $image = str_replace("\\", "", $path);
-                $image = explode("/", $image);
-                $image = end($image);
-                $user->photo_url = $image;
-            }
-            $user->save();
-
             return $user;
         });
 
@@ -98,22 +86,23 @@ class UsersController extends Controller
     }
 
     /**
-     * CHange user password
+     * Change user password
      *
      * @param UpdateUserRequest $request
      * @return void
      */
-    public function changePassword(UpdateUserRequest $request)
+    public function changePassword(UpdateUserPasswordRequest $request)
     {
-        $user = auth('api')->user();
-
-        $changed = DB::transaction(function () use ($request, $user) {
+        /** @var User $user */
+        $saved = DB::transaction(function () use ($request) {
+            $user = $request->user();
             $user->password = bcrypt($request->password);
             return $user->save();
-            return false;
         });
 
-        return  response()->json(['message' => $changed ? 'Password changed successfully.' : 'Password not changed.']);
+        return (new UserResource($request->user()))->additional([
+            'message' => $saved ? 'Password changed successfully.' : 'Password not changed.'
+        ]);
     }
 
     /**
@@ -149,19 +138,17 @@ class UsersController extends Controller
      * @param StoreUserRequest|FormRequest $request
      * @return void
      */
-    public static function createUser(StoreUserRequest|FormRequest $request)
+    public static function createUser(StoreUserRequest $request)
     {
         $user = DB::transaction(function () use ($request) {
-            $user = new User($request->safe()->except(['password', 'password_confirmation']));
+            $user = new User($request->safe()->except(['password', 'password_confirmation', 'blocked']));
             $user->password = bcrypt($request->password);
-            $user->unblock();
+            $user->blocked = $request->input('blocked', 0);
+            $user->markEmailAsVerified();
 
-            $path = (new self)->storeImage($request, 'fotos', 'image');
-            $image = $path;
-            $image = str_replace("\\", "", $path);
-            $image = explode("/", $image);
-            $image = end($image);
-            $user->photo_url = $image;
+            $image = (new self)->storeImage($request, 'fotos', 'image');
+            $user->photo_url = $image ?? null;
+
             $user->save();
 
             return $user;

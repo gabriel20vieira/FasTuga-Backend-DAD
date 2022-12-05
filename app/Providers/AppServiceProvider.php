@@ -27,6 +27,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         Validator::extend('imageable', function ($attribute, $value, $params, $validator) {
+            if (preg_match("/^https?:\/\//m", $value)) {
+                return true;
+            }
+
             try {
                 ImageManagerStatic::make($value);
                 return true;
@@ -61,6 +65,29 @@ class AppServiceProvider extends ServiceProvider
             }
 
             return (11 - $rest) == $value[8];
+        });
+
+        Validator::extend('reference', function ($attribute, $value, $params, $validator) {
+            $data = $validator->getData();
+            $ex = explode('.', $params[0]);
+            foreach ($ex as $e) {
+                $data = $data[$e];
+            }
+
+            switch ($data) {
+                case PaymentType::MBWAY->value:
+                    return is_numeric($value) && strlen($value) == 9;
+                    break;
+                case PaymentType::VISA->value:
+                    return strlen($value) == 16;
+                    break;
+                case PaymentType::PAYPAL->value:
+                    return filter_var($value, FILTER_VALIDATE_EMAIL);
+                    break;
+            }
+
+
+            return false;
         });
     }
 }

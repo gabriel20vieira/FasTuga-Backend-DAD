@@ -45,6 +45,7 @@ class AuthenticationController extends Controller
             'email' => $request->email,
             'password' => $request->password
         ])) {
+            /** @var User $user */
             $user = auth()->user();
             $token = $user->createToken($this->tokenName)->accessToken;
             return (new UserResource($user))->additional(['token' => $token]);

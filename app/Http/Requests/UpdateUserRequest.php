@@ -25,21 +25,35 @@ class UpdateUserRequest extends FormRequest
      */
     public function rules()
     {
-        return [
+        $rules =  [
             'email' => [
-                'email',
-                Rule::unique('users')->ignore($this->user),
+                'sometimes', 'email', Rule::unique('users')->ignore($this->user),
             ],
-            'type' => 'in:' . UserType::toRule(),
-            'image' => 'imageable',
+            'type' => [
+                'sometimes', Rule::in(UserType::toArray())
+            ],
+            'image' => 'sometimes|imageable',
             "default_payment_type" => "sometimes",
             "phone" => "sometimes",
             "nif" => "sometimes",
             "default_payment_type" => "sometimes",
             "name" => "sometimes",
-            "password" => 'sometimes|required|min:8|confirmed',
-            "password_confirmation" => "sometimes",
             "blocked" => "sometimes|boolean"
         ];
+
+        $rules = array_merge($rules, (new UpdateUserPasswordRequest())->rules());
+
+        return $rules;
+    }
+
+
+
+    public function messages()
+    {
+        $messages = [];
+
+        $messages = array_merge((new StoreImageRequest())->messages(), $messages);
+
+        return $messages;
     }
 }

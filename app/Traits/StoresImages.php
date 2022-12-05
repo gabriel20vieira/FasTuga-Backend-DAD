@@ -10,7 +10,7 @@ trait StoresImages
 {
     private function storeImage(FormRequest $request, $folder, $string)
     {
-        if ($request->{$string} == null) {
+        if ($request->{$string} == null || preg_match("/^https?:\/\//m", $request->{$string})) {
             return null;
         }
 
@@ -18,15 +18,14 @@ trait StoresImages
             $folder = "/" . $folder;
         }
         $folder = "public$folder";
+        $stored = null;
 
-        // if ($request->hasFile($string)) {
-        //     $stored = Storage::putFile(
-        //         $folder,
-        //         $request->file($string)
-        //     );
-        //     return preg_replace("/^public/i", "/storage", $stored);
-        // } else
-        if (preg_match("/^data:image\/\w.*;base64/i", $request->input($string))) {
+        if ($request->hasFile($string) && $request->file($string)->isValid()) {
+            $stored = Storage::putFile(
+                $folder,
+                $request->file($string)
+            );
+        } else if (preg_match("/^data:image\/\w.*;base64/i", $request->input($string))) {
 
             preg_match("/data:image\/(.*?);/", $request->input($string), $extension);
             $image = preg_replace('/data:image\/(.*?);base64,/', '', $request->input($string));
@@ -36,12 +35,15 @@ trait StoresImages
                 $folder,
                 base64_decode($image)
             );
-
-            if ($stored) {
-                return preg_replace("/^public/i", "/storage", $folder);
-            }
-        } else {
-            return null;
         }
+
+        if ($stored) {
+            $image = str_replace("\\", "", $folder);
+            $image = explode("/", $image);
+            $image = end($image);
+            return $image;
+        }
+
+        return null;
     }
 }
