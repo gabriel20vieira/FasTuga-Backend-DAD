@@ -31,7 +31,14 @@ class UpdateUserRequest extends FormRequest
                 Rule::unique('users')->ignore($this->user),
             ],
             'type' => 'in:' . UserType::toRule(),
-            'image' => 'imageable'
+            'image' => 'imageable',
+            "default_payment_type" => "sometimes",
+            "phone" => "sometimes",
+            "nif" => "sometimes",
+            "default_payment_type" => "sometimes",
+            "name" => "sometimes",
+            "password" => 'sometimes|required|min:8|confirmed',
+            "password_confirmation" => "sometimes",
         ];
     }
 }

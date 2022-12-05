@@ -77,25 +77,32 @@ class UsersController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user)
     {
-        $changedPassword = false;
-
-        DB::transaction(function () use ($request, $user, &$changedPassword) {
-            $user->update($request->safe()->except('password'));
-            if ($request->has('password')) {
-                $user->password = bcrypt($request->password);
-                $changedPassword = true;
-            }
+        DB::transaction(function () use ($request, $user) {
+            $user->update($request->safe()->except(['password', 'password_confirmation']));
             $user->save();
             return $user;
         });
 
-        $data = new UserResource($user);
+        return new UserResource($user);
+    }
 
-        if ($changedPassword) {
-            $data->additional(['message' => 'Password changed successfully.']);
-        }
+    /**
+     * CHange user password
+     *
+     * @param UpdateUserRequest $request
+     * @return void
+     */
+    public function changePassword(UpdateUserRequest $request)
+    {
+        $user = auth('api')->user();
 
-        return $data;
+        $changed = DB::transaction(function () use ($request, $user) {
+            $user->password = bcrypt($request->password);
+            return $user->save();
+            return false;
+        });
+
+        return  response()->json(['message' => $changed ? 'Password changed successfully.' : 'Password not changed.']);
     }
 
     /**
