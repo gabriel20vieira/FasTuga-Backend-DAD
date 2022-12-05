@@ -82,11 +82,13 @@ class UsersController extends Controller
             $user->save();
 
             $path = (new self)->storeImage($request, 'fotos', 'image');
-            $image = $path;
-            $image = str_replace("\\", "", $path);
-            $image = explode("/", $image);
-            $image = end($image);
-            $user->photo_url = $image;
+            if ($path) {
+                $image = $path;
+                $image = str_replace("\\", "", $path);
+                $image = explode("/", $image);
+                $image = end($image);
+                $user->photo_url = $image;
+            }
             $user->save();
 
             return $user;

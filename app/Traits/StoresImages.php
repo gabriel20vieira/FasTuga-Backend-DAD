@@ -40,8 +40,8 @@ trait StoresImages
             if ($stored) {
                 return preg_replace("/^public/i", "/storage", $folder);
             }
+        } else {
+            return null;
         }
-
-        abort(422, "Bad image provided.");
     }
 }
