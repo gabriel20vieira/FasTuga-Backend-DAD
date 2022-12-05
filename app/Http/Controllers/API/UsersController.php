@@ -41,7 +41,7 @@ class UsersController extends Controller
         // ->where('type', '!=', [UserType::CUSTOMER->value]); // In case is needed
         $builder->ofType($request->input('type'));
 
-        return UserResource::collection($this->paginateBuilder($builder));
+        return UserResource::collection($this->paginateBuilder($builder), $request->input('size'));
     }
 
     /**
