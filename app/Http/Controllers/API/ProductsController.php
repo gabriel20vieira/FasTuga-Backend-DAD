@@ -33,7 +33,7 @@ class ProductsController extends Controller
         $builder->ofType($request->input('type'));
 
         return ProductResource::collection(
-            $this->paginateBuilder($builder->orderBy('name', 'ASC'), $request->input('paginate'))
+            $this->paginateBuilder($builder->latest(), $request->input('size') ?? 9999)
         );
     }
 

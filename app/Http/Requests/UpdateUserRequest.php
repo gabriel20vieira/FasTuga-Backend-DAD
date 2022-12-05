@@ -39,6 +39,7 @@ class UpdateUserRequest extends FormRequest
             "name" => "sometimes",
             "password" => 'sometimes|required|min:8|confirmed',
             "password_confirmation" => "sometimes",
+            "blocked" => "sometimes|boolean"
         ];
     }
 }
