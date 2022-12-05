@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Validation\Rule;
 use App\Models\Types\ProductType;
+use App\Http\Requests\StoreImageRequest;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateProductRequest extends FormRequest
@@ -27,15 +28,30 @@ class UpdateProductRequest extends FormRequest
     {
         $rules = [
             'name' => [
-                Rule::unique('App\Models\Product', 'name')->ignore($this->id)
+                'sometimes',
+                Rule::unique('products', 'name')->ignore($this->product)
             ],
-            'type' => [
-                Rule::in(ProductType::toRule())
-            ],
-            'photo_url' => 'string',
-            'price' => 'numeric'
+            'type' => 'sometimes|in:' . ProductType::toRule(),
+            'image' => 'sometimes|imageable',
+            'price' => 'sometimes|numeric'
         ];
 
         return $rules;
+    }
+
+    /**
+     * Default messages
+     *
+     * @return void
+     */
+    public function messages()
+    {
+        $messages = [
+            'type.in' => "The selected type is invalid. One is required: " . ProductType::toString()
+        ];
+
+        $messages = array_merge($messages, (new StoreImageRequest())->messages());
+
+        return $messages;
     }
 }

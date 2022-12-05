@@ -4,8 +4,9 @@ namespace App\Http\Requests;
 
 use App\Models\Types\PaymentType;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class StoreCustomerRequest extends FormRequest
+class StoreCustomerRequest extends StoreUserRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,23 +25,28 @@ class StoreCustomerRequest extends FormRequest
      */
     public function rules()
     {
-        $rules = [
-            'phone' => 'required|unique:customers,phone|string',
-            'nif' => 'required|integer',
-            // 'nif' => 'required|nif',
-            'default_payment_type' => 'required|in:' . PaymentType::toRule()
-        ];
-
-        $rules = array_merge($rules, (new StoreUserRequest())->rules());
+        $rules = array_merge(parent::rules(), [
+            'phone' => 'required|phone|unique:customers,phone',
+            'nif' => 'required|nif',
+            'default_payment_type' => 'required|in:' . PaymentType::toRule(),
+            "default_payment_reference" => "required|reference:default_payment_type"
+        ]);
+        unset($rules['type']);
 
         return $rules;
     }
 
     public function messages()
     {
-        return [
+        $messages = [
             'nif.nif' => 'The :attribute is not valid.',
-            'default_payment_type.in' => 'The selected default payment type must be either ' . PaymentType::toString()
+            'phone.phone' => "The :attribute is not valid.",
+            'default_payment_type.in' => 'The selected :attribute must be either ' . PaymentType::toString(),
+            "default_payment_reference.reference" => "The :attribute reference is not valid."
         ];
+
+        $messages = array_merge($messages, (new StoreUserRequest())->messages());
+
+        return $messages;
     }
 }

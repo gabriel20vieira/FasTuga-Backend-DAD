@@ -28,18 +28,27 @@ class StoreProductRequest extends FormRequest
         $rules = [
             'name' => 'required|unique:App\Models\Product,name',
             'type' => 'required|in:' . ProductType::toRule(),
-            'description' => 'required',
-            'photo_url' => 'required|string',
+            'description' => 'required|string',
+            'image' => 'sometimes|imageable',
             'price' => 'required|numeric'
         ];
 
         return $rules;
     }
 
+    /**
+     * Default messages
+     *
+     * @return void
+     */
     public function messages()
     {
-        return [
+        $messages = [
             'type.in' => "The selected type is invalid. One is required: " . ProductType::toString()
         ];
+
+        $messages = array_merge($messages, (new StoreImageRequest())->messages());
+
+        return $messages;
     }
 }

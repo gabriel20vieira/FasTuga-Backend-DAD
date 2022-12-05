@@ -9,9 +9,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductResource;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
+use App\Traits\StoresImages;
 
 class ProductsController extends Controller
 {
+
+    use StoresImages;
 
     /**
      * Authorization for this resource
@@ -33,7 +36,7 @@ class ProductsController extends Controller
         $builder->ofType($request->input('type'));
 
         return ProductResource::collection(
-            $this->paginateBuilder($builder->latest(), $request->input('size') ?? 9999)
+            $this->paginateBuilder($builder, $request->input('size', 9999))
         );
     }
 
@@ -45,13 +48,16 @@ class ProductsController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
-        $product = DB::transaction(function () use ($request) {
-            $product = new Product($request->validated());
-            $product->save();
-            return $product;
+        $product = new Product($request->safe()->except('image'));
+        $created = DB::transaction(function () use ($request, $product) {
+            $image = $this->storeImage($request, 'products', 'image');
+            $product->photo_url = $image ?? $product->photo_url;
+            return $product->save();
         });
 
-        return new ProductResource($product);
+        return (new ProductResource($product))->additional(
+            ['message' => $created ? "Product created with success." : "Product was not created."]
+        );
     }
 
     /**
@@ -74,12 +80,16 @@ class ProductsController extends Controller
      */
     public function update(UpdateProductRequest $request, Product $product)
     {
-        DB::transaction(function () use ($request, $product) {
-            $product->fill($request->validated());
-            $product->save();
+        $changed = DB::transaction(function () use ($request, $product) {
+            $product->update($request->safe()->except('image'));
+            $image = $this->storeImage($request, 'products', 'image');
+            $product->photo_url = $image ?? $product->photo_url;
+            return $product->save();
         });
 
-        return new ProductResource($product);
+        return (new ProductResource($product))->additional([
+            'message' => $changed ? "Product updated." : "Product was not updated."
+        ]);
     }
 
     /**
@@ -90,10 +100,12 @@ class ProductsController extends Controller
      */
     public function destroy(Product $product)
     {
-        DB::transaction(function () use ($product) {
+        $deleted = DB::transaction(function () use ($product) {
             $product->delete();
         });
 
-        return new ProductResource($product);
+        return (new ProductResource($product))->additional([
+            'message' => $deleted ? "Product deleted with success." : "Product was not deleted."
+        ]);;
     }
 }

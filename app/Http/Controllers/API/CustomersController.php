@@ -4,14 +4,18 @@ namespace App\Http\Controllers\API;
 
 use App\Models\Customer;
 use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Resources\CustomerResource;
 use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
 use App\Http\Controllers\API\UsersController;
-use App\Http\Resources\UserResource;
+use App\Models\Types\UserType;
+use App\Models\User;
+use Exception;
 
 class CustomersController extends Controller
 {
@@ -29,10 +33,10 @@ class CustomersController extends Controller
      *
      * @return void
      */
-    public function index()
+    public function index(Request $request)
     {
         return CustomerResource::collection(
-            Customer::latest()->paginate(env('PAGINATE', 15))
+            $this->paginateBuilder(Customer::query(), $request->input('size'))
         );
     }
 
@@ -44,17 +48,20 @@ class CustomersController extends Controller
      */
     public function store(StoreCustomerRequest $request)
     {
-        $user = UsersController::createUser($request);
-        $customer = DB::transaction(function () use ($request, $user) {
-            $customer = new Customer($request->safe()->except(['points', 'default_payment_reference', 'user_id']));
+        $customer = new Customer($request->safe()->except(['points', 'user_id']));
+        $created = DB::transaction(function () use ($request, $customer) {
+            $user = UsersController::createUser($request);
+            $user->type = UserType::CUSTOMER->value;
+            $user->save();
+
             $customer->user()->associate($user);
             $customer->points = 0;
-            $customer->default_payment_reference = Str::random();
-            $customer->save();
-            return $customer;
+            return $customer->save();
         });
 
-        return new UserResource($customer->user);
+        return (new UserResource($customer->user))->additional([
+            'message' => $created ? "Customer created with success." : "Customer was not created."
+        ]);
     }
 
     /**
@@ -77,12 +84,15 @@ class CustomersController extends Controller
      */
     public function update(UpdateCustomerRequest $request, Customer $customer)
     {
-
-        DB::transaction(function () use ($request, $customer) {
-            $customer->update($request->validated());
+        $updated = DB::transaction(function () use ($request, $customer) {
+            $user = UsersController::updateUser($request, $customer->user);
+            $user->save();
+            return $customer->update($request->validated());
         });
 
-        return new CustomerResource($customer);
+        return (new UserResource($customer->user))->additional([
+            'message' => $updated ? "User updated with success." : "User was not updated."
+        ]);
     }
 
     /**
@@ -93,11 +103,13 @@ class CustomersController extends Controller
      */
     public function destroy(Customer $customer)
     {
-        DB::transaction(function () use ($customer) {
+        $deleted = DB::transaction(function () use ($customer) {
             $customer->user()->delete();
-            $customer->delete();
+            return $customer->delete();
         });
 
-        return new CustomerResource($customer);
+        return (new CustomerResource($customer))->additional([
+            'message' => $deleted ? "Customer deleted with success." : "Customer was not deleted."
+        ]);
     }
 }

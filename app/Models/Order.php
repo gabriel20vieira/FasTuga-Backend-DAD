@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Request;
 
 class Order extends Model
 {
@@ -141,7 +143,7 @@ class Order extends Model
      * @param float $value
      * @return Response
      */
-    public function makePayment(string $type, string $reference, float $value)
+    public static function makePayment(string $type, string $reference, float $value)
     {
         $data = [
             "type" => strtolower($type),
@@ -162,15 +164,15 @@ class Order extends Model
      * @param float $value
      * @return Response
      */
-    public function makeRefund()
+    public static function makeRefund(string $type, string $reference, float $value)
     {
         $data = [
-            "type" => strtolower($this->payment_type),
-            "reference" => $this->payment_reference,
-            "value" => $this->total_paid
+            "type" => strtolower($type),
+            "reference" => $reference,
+            "value" => $value
         ];
 
-        $response = Http::post(env('REFUND_ENDPOINT'), $data);
+        $response = Http::post(env('REFUNDS_ENDPOINT'), $data);
 
         return $response;
     }

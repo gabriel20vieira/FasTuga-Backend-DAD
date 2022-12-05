@@ -27,8 +27,15 @@ class PaymentRequest extends FormRequest
         return [
             'payment' => 'required',
             'payment.type' => 'required|in:' . PaymentType::toRule(),
-            'payment.reference' => 'required|string',
-            // 'payment.value' => 'required|numeric'
+            'payment.reference' => 'required|string|reference:payment.type',
+        ];
+    }
+
+
+    public function messages()
+    {
+        return [
+            'payment.reference.reference' => "The :attribute reference is not valid."
         ];
     }
 }

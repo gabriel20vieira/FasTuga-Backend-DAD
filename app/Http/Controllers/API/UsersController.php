@@ -39,7 +39,7 @@ class UsersController extends Controller
     {
         $builder = User::query()->with('customer');
         $builder->ofType($request->input('type'));
-        return UserResource::collection($this->paginateBuilder($builder, $request->input('size')));
+        return UserResource::collection($this->paginateBuilder($builder, $request->input('size', 9999)));
     }
 
     /**
@@ -48,10 +48,23 @@ class UsersController extends Controller
      * @param StoreUserRequest $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreUserRequest $request)
+    public function store(StoreUserRequest $request, bool $returnModel = false)
     {
-        $user = self::createUser($request);
-        return new UserResource($user);
+        $user = new User($request->safe()->except(['password', 'password_confirmation', 'blocked']));
+        $created = DB::transaction(function () use ($request, $user) {
+            $user->password = bcrypt($request->password);
+            $user->blocked = $request->input('blocked', 0);
+            $user->markEmailAsVerified();
+
+            $image = (new self)->storeImage($request, 'fotos', 'image');
+            $user->photo_url = $image ?? null;
+
+            return $user->save();
+        });
+
+        return $returnModel ? $user : (new UserResource($user))->additional([
+            'message' => $created ? "User created with success" : "User was not created."
+        ]);
     }
 
     /**
@@ -72,17 +85,18 @@ class UsersController extends Controller
      * @param User $user
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateUserRequest $request, User $user)
+    public function update(UpdateUserRequest $request, User $user, bool $returnModel = false)
     {
-        DB::transaction(function () use ($request, $user) {
+        $updated = DB::transaction(function () use ($request, $user) {
             $user->update($request->safe()->except(['password', 'password_confirmation', 'image']));
             $image = (new self)->storeImage($request, 'fotos', 'image');
             $user->photo_url = $image ?? $user->photo_url;
-            $user->save();
-            return $user;
+            return $user->save();
         });
 
-        return new UserResource($user);
+        return $returnModel ? $user : (new UserResource($user))->additional([
+            'message' => $updated ? "User updated with success." : "User was not updated."
+        ]);
     }
 
     /**
@@ -113,12 +127,14 @@ class UsersController extends Controller
      */
     public function destroy(User $user)
     {
-        DB::transaction(function () use ($user) {
+        $deleted = DB::transaction(function () use ($user) {
             $user->customer()->delete();
-            $user->delete();
+            return $user->delete();
         });
 
-        return new UserResource($user);
+        return (new UserResource($user))->additional([
+            'message' => $deleted ? "User deleted with success." : "User was not deleted."
+        ]);
     }
 
     /**
@@ -136,24 +152,21 @@ class UsersController extends Controller
      * Stores users (static to allow access from customers)
      *
      * @param StoreUserRequest|FormRequest $request
-     * @return void
+     * @return User
      */
     public static function createUser(StoreUserRequest $request)
     {
-        $user = DB::transaction(function () use ($request) {
-            $user = new User($request->safe()->except(['password', 'password_confirmation', 'blocked']));
-            $user->password = bcrypt($request->password);
-            $user->blocked = $request->input('blocked', 0);
-            $user->markEmailAsVerified();
+        return (new self)->store($request, true);
+    }
 
-            $image = (new self)->storeImage($request, 'fotos', 'image');
-            $user->photo_url = $image ?? null;
-
-            $user->save();
-
-            return $user;
-        });
-
-        return $user;
+    /**
+     * Updates users (static access)
+     *
+     * @param UpdateUserRequest $request
+     * @return User
+     */
+    public static function updateUser(UpdateUserRequest $request, User $user)
+    {
+        return (new self)->update($request, $user, true);
     }
 }

@@ -28,4 +28,11 @@ class StoreImageRequest extends FormRequest
             'image' => 'required|imageable'
         ];
     }
+
+    public function messages()
+    {
+        return [
+            'image.imageable' => 'Bad image provided.'
+        ];
+    }
 }

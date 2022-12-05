@@ -32,14 +32,9 @@ class StoreOrderRequest extends FormRequest
             'items.*' => 'required|exists:products,id',
         ];
 
-        $rules = array_merge($rules, (new PaymentRequest())->rules());
-
-        // if (!auth('api')->hasUser()) {
-        //     $rules = array_merge($rules, [
-        //         'payment_type' => 'required|in:' . PaymentType::toRule(),
-        //         'payment_reference' => 'required|string'
-        //     ]);
-        // }
+        if (optional($this->user('api'))->customer == null) {
+            $rules = array_merge($rules, (new PaymentRequest())->rules());
+        }
 
         return $rules;
     }
@@ -54,7 +49,7 @@ class StoreOrderRequest extends FormRequest
     {
         $messages = [
             'points_used_to_pay.points' => 'The amount of points given must be a multiple of 10',
-            'points_used_to_pay.user_points' => 'The user does not have that many points.'
+            'points_used_to_pay.user_points' => 'The user does not have that many points.',
         ];
 
         $messages = array_merge($messages, (new PaymentRequest())->messages());

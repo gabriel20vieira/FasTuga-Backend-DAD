@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Types\PaymentType;
+use Exception;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Validator;
 use Intervention\Image\ImageManagerStatic;
@@ -68,6 +69,11 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Validator::extend('reference', function ($attribute, $value, $params, $validator) {
+            if (!isset($params[0])) {
+                throw new Exception("Reference field mustn't be empty. ( 'reference:related_field' )");
+            }
+
+
             $data = $validator->getData();
             $ex = explode('.', $params[0]);
             foreach ($ex as $e) {
@@ -88,6 +94,10 @@ class AppServiceProvider extends ServiceProvider
 
 
             return false;
+        });
+
+        Validator::extend('phone', function ($attribute, $value, $params, $validator) {
+            return preg_match("/^(\+?351)?(9|2)\d\d{7}$/", $value);
         });
     }
 }
