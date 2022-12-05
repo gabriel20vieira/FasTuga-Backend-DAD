@@ -80,6 +80,15 @@ class UsersController extends Controller
         DB::transaction(function () use ($request, $user) {
             $user->update($request->safe()->except(['password', 'password_confirmation']));
             $user->save();
+
+            $path = (new self)->storeImage($request, 'fotos', 'image');
+            $image = $path;
+            $image = str_replace("\\", "", $path);
+            $image = explode("/", $image);
+            $image = end($image);
+            $user->photo_url = $image;
+            $user->save();
+
             return $user;
         });
 
@@ -141,7 +150,7 @@ class UsersController extends Controller
     public static function createUser(StoreUserRequest|FormRequest $request)
     {
         $user = DB::transaction(function () use ($request) {
-            $user = new User($request->safe()->except('password'));
+            $user = new User($request->safe()->except(['password', 'password_confirmation']));
             $user->password = bcrypt($request->password);
             $user->unblock();
 
