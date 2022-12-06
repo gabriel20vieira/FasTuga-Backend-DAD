@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Types\UserType;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreUserRequest extends FormRequest
 {
@@ -26,11 +27,16 @@ class StoreUserRequest extends FormRequest
     {
         $rules = [
             'name' => 'required',
-            'email' => 'required|unique:users,email|email',
+            'email' => ['required', 'email', Rule::unique('users', 'email')],
             'password' => 'required',
-            'type' => 'required|in:' . UserType::toRule(),
             'image' => 'imageable'
         ];
+
+        if ($this->user('api') && $this->user('api')->isCustomer()) {
+            $rules = array_merge($rules, [
+                'type' => 'required|in:' . UserType::toRule()
+            ]);
+        }
 
         return $rules;
     }

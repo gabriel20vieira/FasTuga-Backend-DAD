@@ -104,8 +104,8 @@ class CustomersController extends Controller
     public function destroy(Customer $customer)
     {
         $deleted = DB::transaction(function () use ($customer) {
-            $customer->user()->delete();
-            return $customer->delete();
+            $customer->user()->forceDelete();
+            return $customer->forceDelete();
         });
 
         return (new CustomerResource($customer))->additional([

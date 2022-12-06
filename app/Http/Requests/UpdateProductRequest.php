@@ -29,7 +29,7 @@ class UpdateProductRequest extends FormRequest
         $rules = [
             'name' => [
                 'sometimes',
-                Rule::unique('products', 'name')->ignore($this->product)
+                Rule::unique('products', 'name')->ignore($this->name, 'name')
             ],
             'type' => 'sometimes|in:' . ProductType::toRule(),
             'image' => 'sometimes|imageable',

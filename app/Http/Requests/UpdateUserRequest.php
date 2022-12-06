@@ -28,14 +28,19 @@ class UpdateUserRequest extends FormRequest
         $rules = [
             "name" => "sometimes|string",
             'email' => [
-                'sometimes', 'email', Rule::unique('users')->ignore($this->user),
+                'sometimes', 'email', Rule::unique('users', 'email')->ignore($this->email, 'email'),
             ],
-            'type' => [
-                'sometimes', Rule::in(UserType::toArray())
-            ],
-            "blocked" => "sometimes|boolean",
             'image' => 'sometimes|imageable'
         ];
+
+        if ($this->user('api') && $this->user('api')->isManager()) {
+            $rules = array_merge($rules, [
+                'type' => [
+                    'sometimes', Rule::in(UserType::toArray())
+                ],
+                "blocked" => "sometimes|boolean",
+            ]);
+        }
 
         $rules = array_merge($rules, (new UpdateUserPasswordRequest())->rules());
 

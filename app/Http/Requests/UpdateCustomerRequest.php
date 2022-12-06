@@ -27,11 +27,15 @@ class UpdateCustomerRequest extends UpdateUserRequest
     public function rules()
     {
         $rules = array_merge(parent::rules(), [
-            'email' => [
-                'sometimes', 'email', Rule::unique('users')->ignore($this->customer->user),
+            'phone' => [
+                'sometimes',
+                'string', Rule::unique('customers', 'phone')->ignore($this->phone, 'phone')
             ],
-            'phone' => ['sometimes', 'string', Rule::unique('App\Models\Customer', 'phone')->ignore($this->customer)],
-            'nif' => ['sometimes', 'nif', Rule::unique('App\Models\Customer', 'nif')->ignore($this->customer)],
+            'nif' => [
+                'sometimes',
+                'nif',
+                Rule::unique('customers', 'nif')->ignore($this->nif, 'nif')
+            ],
             'default_payment_type' => 'sometimes|in:' . PaymentType::toRule(),
             'default_payment_reference' => 'sometimes|reference:default_payment_type',
         ]);

@@ -50,10 +50,17 @@ class UsersController extends Controller
      */
     public function store(StoreUserRequest $request, bool $returnModel = false)
     {
-        $user = new User($request->safe()->except(['password', 'password_confirmation', 'blocked']));
+        $user = new User($request->safe()->except(['password', 'password_confirmation', 'blocked', 'type']));
         $created = DB::transaction(function () use ($request, $user) {
             $user->password = bcrypt($request->password);
             $user->blocked = $request->input('blocked', 0);
+
+            if ($request->user('api')->isManager()) {
+                $user->type = $request->input('type');
+            } else {
+                $user->type = UserType::CUSTOMER->value;
+            }
+
             $user->markEmailAsVerified();
 
             $image = (new self)->storeImage($request, 'fotos', 'image');
@@ -88,9 +95,12 @@ class UsersController extends Controller
     public function update(UpdateUserRequest $request, User $user, bool $returnModel = false)
     {
         $updated = DB::transaction(function () use ($request, $user) {
-            $user->update($request->safe()->except(['password', 'password_confirmation', 'image']));
+            $user->update($request->safe()->except(['password', 'password_confirmation', 'image', 'type']));
             $image = (new self)->storeImage($request, 'fotos', 'image');
             $user->photo_url = $image ?? $user->photo_url;
+            if ($request->user('api')->id != $user->id && $request->user('api')->isManager()) {
+                $user->type = $request->input('type', $user->type);
+            }
             return $user->save();
         });
 
@@ -128,8 +138,8 @@ class UsersController extends Controller
     public function destroy(User $user)
     {
         $deleted = DB::transaction(function () use ($user) {
-            $user->customer()->delete();
-            return $user->delete();
+            $user->customer()->forceDelete();
+            return $user->forceDelete();
         });
 
         return (new UserResource($user))->additional([
