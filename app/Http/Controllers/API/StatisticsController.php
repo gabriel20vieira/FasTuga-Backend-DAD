@@ -27,22 +27,22 @@ class StatisticsController extends Controller
 
         return [
             'all' => [
-                'total_of_new_costumers' => $this->totalOfCustomers(),
+                'total_of_new_customers' => $this->totalOfCustomers(),
                 'total_of_orders' => $this->totalOfOrders(),
                 'total_of_orders_by_type' => $this->ordersByType(),
             ],
             'monthly' => [
-                'total_of_new_costumers' => $this->totalOfCustomers(Carbon::now()->subMonth()),
+                'total_of_new_customers' => $this->totalOfCustomers(Carbon::now()->subMonth()),
                 'total_of_orders' => $this->totalOfOrders(Carbon::now()->subMonth()),
                 'total_of_orders_by_type' => $this->ordersByType(Carbon::now()->subMonth()),
             ],
             'weekly' => [
-                'total_of_new_costumers' => $this->totalOfCustomers(Carbon::now()->subWeek()),
+                'total_of_new_customers' => $this->totalOfCustomers(Carbon::now()->subWeek()),
                 'total_of_orders' => $this->totalOfOrders(Carbon::now()->subWeek()),
                 'total_of_orders_by_type' => $this->ordersByType(Carbon::now()->subWeek()),
             ],
             'daily' => [
-                'total_of_new_costumers' => $this->totalOfCustomers(Carbon::now()->subDay()),
+                'total_of_new_customers' => $this->totalOfCustomers(Carbon::now()->subDay()),
                 'total_of_orders' => $this->totalOfOrders(Carbon::now()->subDay()),
                 'total_of_orders_by_type' => $this->ordersByType(Carbon::now()->subDay()),
                 'mean_of_orders_by_' . $this->minutes . '_minutes' => $this->meanOfOrdersAMinute($this->minutes),
