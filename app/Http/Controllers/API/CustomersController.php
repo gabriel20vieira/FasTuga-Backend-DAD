@@ -91,7 +91,7 @@ class CustomersController extends Controller
         });
 
         return (new UserResource($customer->user))->additional([
-            'message' => $updated ? "User updated with success." : "User was not updated."
+            'message' => $updated ? "Customer updated with success." : "Customer was not updated."
         ]);
     }
 

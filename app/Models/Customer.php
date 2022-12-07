@@ -20,13 +20,44 @@ class Customer extends Model
         'custom'
     ];
 
+    /**
+     * User relationship
+     *
+     * @return BelongsTo
+     */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Orders relationship
+     *
+     * @return HasMany
+     */
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    /**
+     * Payment type getter mutator
+     *
+     * @return string
+     */
+    public function getDefaultPaymentTypeAttribute($value)
+    {
+        return strtoupper($value);
+    }
+
+    /**
+     * Payment type setter mutator
+     *
+     * @param string $value
+     * @return void
+     */
+    public function setDefaultPaymentTypeAttribute($value)
+    {
+        $this->attributes['default_payment_type'] = strtoupper($value);
     }
 }

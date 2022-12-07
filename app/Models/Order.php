@@ -70,7 +70,7 @@ class Order extends Model
      */
     public function getPaymentTypeAttribute($value)
     {
-        return strtolower($value);
+        return strtoupper($value);
     }
 
     /**
@@ -81,7 +81,7 @@ class Order extends Model
      */
     public function setPaymentTypeAttribute($value)
     {
-        $this->attributes['payment_type'] = strtolower($value);
+        $this->attributes['payment_type'] = strtoupper($value);
     }
 
     /**
