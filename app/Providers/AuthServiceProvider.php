@@ -41,5 +41,12 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('upload-image', function () {
             return auth('api')->user()->isManager() ?? false;
         });
+
+        Gate::define('access-statistics', function () {
+            if (auth('api')->hasUser()) {
+                return !auth('api')->user()->isCustomer();
+            }
+            return false;
+        });
     }
 }

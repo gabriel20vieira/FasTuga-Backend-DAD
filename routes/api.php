@@ -9,6 +9,7 @@ use App\Http\Controllers\API\Auth\AuthenticationController;
 use App\Http\Controllers\API\HomeController;
 use App\Http\Controllers\API\OrdersController;
 use App\Http\Controllers\API\PaymentsController;
+use App\Http\Controllers\API\StatisticsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,4 +46,6 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('change-password', [UsersController::class, 'changePassword']);
     Route::get('users/me', [UsersController::class, 'me']);
     Route::apiResource('users', UsersController::class);
+
+    Route::get('statistics', [StatisticsController::class, 'statistics']);
 });
