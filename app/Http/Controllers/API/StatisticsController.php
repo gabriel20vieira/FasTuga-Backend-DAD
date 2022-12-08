@@ -42,6 +42,7 @@ class StatisticsController extends Controller
                 'total_of_orders_by_type' => $this->ordersByType(Carbon::now()->subWeek()),
             ],
             'daily' => [
+                'total_earnings' => $this->totalEarnings(Carbon::now()->subDay()),
                 'total_of_new_customers' => $this->totalOfCustomers(Carbon::now()->subDay()),
                 'total_of_orders' => $this->totalOfOrders(Carbon::now()->subDay()),
                 'total_of_orders_by_type' => $this->ordersByType(Carbon::now()->subDay()),
@@ -139,5 +140,17 @@ class StatisticsController extends Controller
     {
         $items = Order::whereBetween('created_at', [Carbon::now()->subMinutes($minutes), Carbon::now()])->sum('total_paid');
         return round($items / $minutes, 2);
+    }
+
+    /**
+     * Totoal pais within givern time
+     *
+     * @param Carbon|null $howOld
+     * @return float
+     */
+    private function totalEarnings(Carbon $howOld = null)
+    {
+        $builder = Order::whereBetween('created_at', [$howOld, Carbon::now()])->sum('total_paid');
+        return $builder;
     }
 }
