@@ -55,7 +55,7 @@ class UsersController extends Controller
             $user->password = bcrypt($request->password);
             $user->blocked = $request->input('blocked', 0);
 
-            if ($request->user('api')->isManager()) {
+            if (optional($request->user('api'))->isManager() ?? false) {
                 $user->type = $request->input('type');
             } else {
                 $user->type = UserType::CUSTOMER->value;

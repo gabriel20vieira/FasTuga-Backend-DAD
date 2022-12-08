@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\API\Auth;
 
+use App\Http\Controllers\API\CustomersController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Http\Requests\RegisterUserRequest;
+use App\Http\Requests\StoreCustomerRequest;
 
 class AuthenticationController extends Controller
 {
@@ -20,14 +22,10 @@ class AuthenticationController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\Response
      */
-    public function register(RegisterUserRequest $request)
+    public function register(StoreCustomerRequest $request)
     {
         DB::transaction(function () use ($request) {
-            /** @var \App\Models\User $user */
-            $user = new User($request->safe()->only(['name', 'email']));
-            $user->password = bcrypt($request->password);
-            $user->save();
-            $user->markEmailAsVerified();
+            CustomersController::createCustomer($request);
         });
 
         return response()->json(['message' => 'Register successful'], 200);

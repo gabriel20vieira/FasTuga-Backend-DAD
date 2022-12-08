@@ -6,7 +6,7 @@ use App\Models\Types\UserType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class StoreUserRequest extends FormRequest
+class StoreUserRequest extends RegisterUserRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,12 +25,9 @@ class StoreUserRequest extends FormRequest
      */
     public function rules()
     {
-        $rules = [
-            'name' => 'required',
-            'email' => ['required', 'email', Rule::unique('users', 'email')],
-            'password' => 'required',
+        $rules = array_merge(parent::rules(), [
             'image' => 'imageable'
-        ];
+        ]);
 
         if ($this->user('api') && $this->user('api')->isCustomer()) {
             $rules = array_merge($rules, [
@@ -43,9 +40,9 @@ class StoreUserRequest extends FormRequest
 
     public function messages()
     {
-        $messages = [
+        $messages = array_merge(parent::messages(), [
             'type.in' => "The selected user type is invalid. One is required: " . UserType::toString()
-        ];
+        ]);
 
         $messages = array_merge($messages, (new StoreImageRequest())->messages());
 

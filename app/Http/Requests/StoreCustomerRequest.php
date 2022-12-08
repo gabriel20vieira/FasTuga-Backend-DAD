@@ -38,14 +38,12 @@ class StoreCustomerRequest extends StoreUserRequest
 
     public function messages()
     {
-        $messages = [
+        $messages = array_merge(parent::messages(), [
             'nif.nif' => 'The :attribute is not valid.',
             'phone.phone' => "The :attribute is not valid.",
             'default_payment_type.in' => 'The selected :attribute must be either ' . PaymentType::toString(),
             "default_payment_reference.reference" => "The :attribute reference is not valid."
-        ];
-
-        $messages = array_merge($messages, (new StoreUserRequest())->messages());
+        ]);
 
         return $messages;
     }

@@ -3,19 +3,15 @@
 namespace App\Http\Controllers\API;
 
 use App\Models\Customer;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Models\Types\UserType;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
-use App\Http\Requests\StoreUserRequest;
 use App\Http\Resources\CustomerResource;
 use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
 use App\Http\Controllers\API\UsersController;
-use App\Models\Types\UserType;
-use App\Models\User;
-use Exception;
 
 class CustomersController extends Controller
 {
@@ -46,7 +42,7 @@ class CustomersController extends Controller
      * @param StoreCustomerRequest $request
      * @return void
      */
-    public function store(StoreCustomerRequest $request)
+    public function store(StoreCustomerRequest $request, bool $returnModel = false)
     {
         $customer = new Customer($request->safe()->except(['points', 'user_id']));
         $created = DB::transaction(function () use ($request, $customer) {
@@ -59,7 +55,7 @@ class CustomersController extends Controller
             return $customer->save();
         });
 
-        return (new UserResource($customer->user))->additional([
+        return $returnModel ? $customer : (new UserResource($customer->user))->additional([
             'message' => $created ? "Customer created with success." : "Customer was not created."
         ]);
     }
@@ -111,5 +107,16 @@ class CustomersController extends Controller
         return (new CustomerResource($customer))->additional([
             'message' => $deleted ? "Customer deleted with success." : "Customer was not deleted."
         ]);
+    }
+
+    /**
+     * Stores user (static call)
+     *
+     * @param StoreCustomerRequest $request
+     * @return Customer
+     */
+    public static function createCustomer(StoreCustomerRequest $request)
+    {
+        return (new self)->store($request, true);
     }
 }
