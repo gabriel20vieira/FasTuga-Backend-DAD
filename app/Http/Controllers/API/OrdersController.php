@@ -95,6 +95,7 @@ class OrdersController extends Controller
 
                 if ($user) {
                     $user->customer->points -= $order->points_used_to_pay;
+                    $user->customer->points += $order->points_gained;
                     $order->customer()->associate($user->customer)->save();
                     $user->save();
                     $user->customer->save();
