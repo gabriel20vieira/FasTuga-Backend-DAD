@@ -60,4 +60,15 @@ class Customer extends Model
     {
         $this->attributes['default_payment_type'] = strtoupper($value);
     }
+
+    /**
+     * Checks if the user has enough points
+     *
+     * @param integer $points
+     * @return boolean
+     */
+    public function canUsePoints(int $points)
+    {
+        return ($this->points - $points) >= 0;
+    }
 }

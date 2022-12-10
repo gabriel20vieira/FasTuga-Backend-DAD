@@ -96,6 +96,8 @@ class OrdersController extends Controller
                 if ($user) {
                     $user->customer->points -= $order->points_used_to_pay;
                     $order->customer()->associate($user->customer)->save();
+                    $user->save();
+                    $user->customer->save();
                 }
 
                 $order->payment_type = $user ? $user->customer->default_payment_type : $request->input('payment.type');
