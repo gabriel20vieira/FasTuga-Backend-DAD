@@ -25,7 +25,7 @@ class Controller extends BaseController
     public function paginateBuilder(Builder|Relation $builder, $paginate = null)
     {
         $paginate = is_numeric($paginate) ? $paginate : null;
-        $builder = $builder->latest()->paginate($paginate ?? env('PAGINATE', 15))->withQueryString();
+        $builder = $builder->paginate($paginate ?? env('PAGINATE', 15))->withQueryString();
 
         if ($builder->isEmpty() && !$builder->onFirstPage()) {
             $this->redirect($builder->url(1));

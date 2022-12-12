@@ -37,13 +37,13 @@ class OrdersController extends Controller
     {
         $builder = Order::query();
         if (auth('api')->user()->isManager()) {
-            $builder = Order::with('items')->latest();
+            $builder = $builder->with('items')->latest();
         } else {
             $builder = auth('api')->user()->orders()->with('items')->latest();
         }
 
         return OrderResource::collection(
-            $this->paginateBuilder($builder, $request->input('size', 9999))
+            $this->paginateBuilder($builder, $request->input('size'))
         );
     }
 

@@ -39,7 +39,7 @@ class UsersController extends Controller
     {
         $builder = User::query()->with('customer');
         $builder->ofType($request->input('type'));
-        return UserResource::collection($this->paginateBuilder($builder, $request->input('size', 9999)));
+        return UserResource::collection($this->paginateBuilder($builder, $request->input('size')));
     }
 
     /**
