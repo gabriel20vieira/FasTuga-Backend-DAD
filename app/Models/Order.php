@@ -6,13 +6,15 @@ use App\Models\Types\PaymentType;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Request;
 use App\Http\Requests\StoreOrderRequest;
+use App\Models\Types\OrderStatus;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Request;
 
 class Order extends Model
 {
@@ -61,6 +63,62 @@ class Order extends Model
     public function delivered()
     {
         return $this->hasOne(User::class, 'id', 'delivered_by');
+    }
+
+    /**
+     * Scope a given status
+     *
+     * @param Builder $query
+     * @param OrderStatus $status
+     * @return Builder
+     */
+    public function scopeWhereStatus($query, OrderStatus $status)
+    {
+        return $query->where('status', $status);
+    }
+
+    /**
+     * Ready scope
+     *
+     * @param  Builder  $query
+     * @return Builder
+     */
+    public function scopeReady($query)
+    {
+        return $query->whereStatus(OrderStatus::READY);
+    }
+
+    /**
+     * Ready scope
+     *
+     * @param  Builder  $query
+     * @return Builder
+     */
+    public function scopePreparing($query)
+    {
+        return $query->whereStatus(OrderStatus::PREPARING);
+    }
+
+    /**
+     * Ready scope
+     *
+     * @param  Builder  $query
+     * @return Builder
+     */
+    public function scopeDelivered($query)
+    {
+        return $query->whereStatus(OrderStatus::DELIVERED);
+    }
+
+    /**
+     * Ready scope
+     *
+     * @param  Builder  $query
+     * @return Builder
+     */
+    public function scopeCanceled($query)
+    {
+        return $query->whereStatus(OrderStatus::CANCELED);
     }
 
     /**
