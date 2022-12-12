@@ -20,10 +20,10 @@ class OrderItemResource extends JsonResource
             'identification' => $this->identification,
             'order_id' => $this->order_id,
             'order_local_number' => $this->order_local_number,
-            'product_id' => new ProductResource($this->product),
             'status' => $this->status,
             'price' => $this->price,
-            'preparation_by' => $this->preparation_by
+            'product' => new ProductResource($this->product),
+            'preparated' => new UserResource($this->preparated)
         ];
     }
 }

@@ -71,6 +71,16 @@ class User extends Authenticatable
     }
 
     /**
+     * Prepared relationship
+     *
+     * @return void
+     */
+    public function prepared()
+    {
+        return $this->hasMany(OrderItem::class, 'preparation_by', 'id');
+    }
+
+    /**
      * Get user latest payment
      *
      * @return void

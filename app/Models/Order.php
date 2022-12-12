@@ -34,16 +34,6 @@ class Order extends Model
     ];
 
     /**
-     * User relationsship
-     *
-     * @return BelongsTo
-     */
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    /**
      * Customer relationship
      *
      * @return BelongsTo
@@ -61,6 +51,16 @@ class Order extends Model
     public function items()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * Delivered by relationship
+     *
+     * @return HasOne
+     */
+    public function delivered()
+    {
+        return $this->hasOne(User::class, 'id', 'delivered_by');
     }
 
     /**

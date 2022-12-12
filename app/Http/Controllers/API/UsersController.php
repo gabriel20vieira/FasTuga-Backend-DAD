@@ -3,18 +3,16 @@
 namespace App\Http\Controllers\API;
 
 use App\Models\User;
+use App\Traits\StoresImages;
 use Illuminate\Http\Request;
 use App\Models\Types\UserType;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\UserResource;
-use Illuminate\Pagination\Paginator;
 use App\Http\Requests\StoreUserRequest;
-use App\Http\Requests\UpdateUserPasswordRequest;
 use App\Http\Requests\UpdateUserRequest;
-use App\Traits\StoresImages;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Resources\UserCustomerResource;
+use App\Http\Requests\UpdateUserPasswordRequest;
 
 class UsersController extends Controller
 {
@@ -39,7 +37,7 @@ class UsersController extends Controller
     {
         $builder = User::query()->with('customer');
         $builder->ofType($request->input('type'));
-        return UserResource::collection($this->paginateBuilder($builder, $request->input('size')));
+        return UserCustomerResource::collection($this->paginateBuilder($builder, $request->input('size')));
     }
 
     /**
@@ -69,7 +67,7 @@ class UsersController extends Controller
             return $user->save();
         });
 
-        return $returnModel ? $user : (new UserResource($user))->additional([
+        return $returnModel ? $user : (new UserCustomerResource($user))->additional([
             'message' => $created ? "User created with success" : "User was not created."
         ]);
     }
@@ -82,7 +80,7 @@ class UsersController extends Controller
      */
     public function show(User $user)
     {
-        return new UserResource($user);
+        return new UserCustomerResource($user);
     }
 
     /**
@@ -104,7 +102,7 @@ class UsersController extends Controller
             return $user->save();
         });
 
-        return $returnModel ? $user : (new UserResource($user))->additional([
+        return $returnModel ? $user : (new UserCustomerResource($user))->additional([
             'message' => $updated ? "User updated with success." : "User was not updated."
         ]);
     }
@@ -124,7 +122,7 @@ class UsersController extends Controller
             return $user->save();
         });
 
-        return (new UserResource($request->user()))->additional([
+        return (new UserCustomerResource($request->user()))->additional([
             'message' => $saved ? 'Password changed successfully.' : 'Password not changed.'
         ]);
     }
@@ -142,7 +140,7 @@ class UsersController extends Controller
             return $user->forceDelete();
         });
 
-        return (new UserResource($user))->additional([
+        return (new UserCustomerResource($user))->additional([
             'message' => $deleted ? "User deleted with success." : "User was not deleted."
         ]);
     }
@@ -155,7 +153,7 @@ class UsersController extends Controller
      */
     public function me(Request $request)
     {
-        return new UserResource($request->user());
+        return new UserCustomerResource($request->user());
     }
 
     /**

@@ -32,7 +32,7 @@ class OrderPolicy
     public function view(?User $user, Order $order)
     {
         return $this->ifAuthenticated($user)->isManager()
-            || ($order->customer ? $order->customer->user->id == $this->ifAuthenticated($user)->id : false);
+            || ($order->customer ? ($order->customer->user->id ?? null) == $this->ifAuthenticated($user)->id : false);
     }
 
     /**

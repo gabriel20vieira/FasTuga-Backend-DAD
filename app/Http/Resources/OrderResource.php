@@ -2,8 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Customer;
-use App\Models\OrderItem;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class OrderResource extends JsonResource
@@ -20,8 +18,6 @@ class OrderResource extends JsonResource
             'id' => $this->id,
             'ticket_number' => $this->ticket_number,
             'status' => $this->status,
-            'customer_id' => $this->customer_id,
-            'customer' => new CustomerResource($this->customer),
             'total_price' => $this->total_price,
             'total_paid' => $this->total_paid,
             'total_paid_with_points' => $this->total_paid_with_points,
@@ -30,7 +26,9 @@ class OrderResource extends JsonResource
             'payment_type' => $this->payment_type,
             'payment_reference' => $this->payment_reference,
             'date' => $this->date,
-            'delivered_by' => $this->delivered_by,
+            'user' => new UserResource($this->customer->user),
+            'customer' => new CustomerResource($this->customer),
+            'delivered' => new UserResource($this->delivered),
             'items' => OrderItemResource::collection($this->items)
         ];
     }

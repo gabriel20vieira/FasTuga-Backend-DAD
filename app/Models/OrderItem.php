@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class OrderItem extends Model
 {
@@ -21,23 +24,53 @@ class OrderItem extends Model
         'notes'
     ];
 
+    /**
+     * Identification attribute
+     *
+     * @return string
+     */
     public function getIdentificationAttribute()
     {
         return $this->order->ticket_number . "-" . $this->order_local_number;
     }
 
+    /**
+     * User relationship
+     *
+     * @return BelongsTo
+     */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Product relationship
+     *
+     * @return BelongsTo
+     */
     public function product()
     {
         return $this->belongsTo(Product::class);
     }
 
+    /**
+     * Order relationship
+     *
+     * @return BelongsTo
+     */
     public function order()
     {
         return $this->belongsTo(Order::class);
+    }
+
+    /**
+     * Prepared by relationship
+     *
+     * @return HasOne
+     */
+    public function preparated()
+    {
+        return $this->hasOne(User::class, 'id', 'preparation_by');
     }
 }
