@@ -101,7 +101,7 @@ class ProductsController extends Controller
     public function destroy(Product $product)
     {
         $deleted = DB::transaction(function () use ($product) {
-            $product->delete();
+            return $product->delete();
         });
 
         return (new ProductResource($product))->additional([
