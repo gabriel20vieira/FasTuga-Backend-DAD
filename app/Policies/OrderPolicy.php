@@ -56,7 +56,7 @@ class OrderPolicy
      */
     public function update(?User $user, Order $order)
     {
-        return $this->ifAuthenticated($user)->isManager();
+        return $this->ifAuthenticated($user)->isEmployee();
     }
 
     /**

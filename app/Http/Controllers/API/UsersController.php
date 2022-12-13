@@ -93,11 +93,12 @@ class UsersController extends Controller
     public function update(UpdateUserRequest $request, User $user, bool $returnModel = false)
     {
         $updated = DB::transaction(function () use ($request, $user) {
-            $user->update($request->safe()->except(['password', 'password_confirmation', 'image', 'type']));
+            $user->update($request->safe()->except(['password', 'password_confirmation', 'image', 'type', 'blocked']));
             $image = (new self)->storeImage($request, 'fotos', 'image');
             $user->photo_url = $image ?? $user->photo_url;
             if ($request->user('api')->id != $user->id && $request->user('api')->isManager()) {
                 $user->type = $request->input('type', $user->type);
+                $user->blocked = $request->input('blocked', $user->blocked);
             }
             return $user->save();
         });

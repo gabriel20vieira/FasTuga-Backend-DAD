@@ -83,10 +83,10 @@ class AppServiceProvider extends ServiceProvider
 
             switch ($data) {
                 case PaymentType::MBWAY->value:
-                    return is_numeric($value) && strlen($value) == 9;
+                    return is_numeric($value) && strlen($value) == 9 && $value[0] == 9;
                     break;
                 case PaymentType::VISA->value:
-                    return strlen($value) == 16;
+                    return strlen($value) == 16 && $value[0] == 4;
                     break;
                 case PaymentType::PAYPAL->value:
                     return filter_var($value, FILTER_VALIDATE_EMAIL);

@@ -194,6 +194,16 @@ class User extends Authenticatable
     }
 
     /**
+     * Is Employee
+     *
+     * @return boolean
+     */
+    public function isEmployee()
+    {
+        return $this->isManager() || $this->isDelivery() || $this->isChef();
+    }
+
+    /**
      * Blocks user
      *
      * @return void

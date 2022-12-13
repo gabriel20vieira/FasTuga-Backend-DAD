@@ -145,11 +145,11 @@ class OrdersController extends Controller
     public function update(UpdateOrderRequest $request, Order $order)
     {
 
-        DB::transaction(function () use ($request, $order) {
+        $saved = DB::transaction(function () use ($request, $order) {
 
-            $order->update($request->validated());
+            $order->update($request->safe()->only('status'));
 
-            if ($order->status == OrderStatus::CANCELED->value) {
+            if ($order->status == OrderStatus::CANCELED->value && $request->user('api')->isManager()) {
                 $refund = Order::makeRefund(
                     $order->payment_type,
                     $order->payment_reference,
@@ -163,13 +163,16 @@ class OrdersController extends Controller
                         $refund->status()
                     )
                 );
+
+                $order->customer->points -= $order->points_gained;
+                $order->customer->save();
             }
 
-            $order->save();
+            return $order->save();
         });
 
         return (new OrderResource($order))->additional([
-            'message' => "Order updated with success."
+            'message' => $saved ? "Order updated with success." : "Order was not updated."
         ]);
     }
 
