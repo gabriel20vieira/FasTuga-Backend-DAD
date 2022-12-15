@@ -86,7 +86,7 @@ class Order extends Model
      */
     public function scopeReady($query)
     {
-        return $query->whereStatus(OrderStatus::READY->value);
+        return $query->whereStatus(OrderStatus::READY);
     }
 
     /**
@@ -97,7 +97,7 @@ class Order extends Model
      */
     public function scopePreparing($query)
     {
-        return $query->whereStatus(OrderStatus::PREPARING->value);
+        return $query->whereStatus(OrderStatus::PREPARING);
     }
 
     /**
@@ -108,7 +108,7 @@ class Order extends Model
      */
     public function scopeDelivered($query)
     {
-        return $query->whereStatus(OrderStatus::DELIVERED->value);
+        return $query->whereStatus(OrderStatus::DELIVERED);
     }
 
     /**
@@ -119,7 +119,7 @@ class Order extends Model
      */
     public function scopeCanceled($query)
     {
-        return $query->whereStatus(OrderStatus::CANCELED->value);
+        return $query->whereStatus(OrderStatus::CANCELED);
     }
 
     /**
