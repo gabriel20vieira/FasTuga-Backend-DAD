@@ -13,11 +13,11 @@ class BoardController extends Controller
     {
         $preparing = Order::preparing()
             ->orderBy('ticket_number', 'ASC')
-            ->limit(env('BOARD_TICKET_LIMIT', 10))
+            ->limit(env('BOARD_TICKET_LIMIT', 12))
             ->get();
         $ready = Order::ready()
             ->orderBy('ticket_number', 'ASC')
-            ->limit(env('BOARD_TICKET_LIMIT', 10))
+            ->limit(env('BOARD_TICKET_LIMIT', 12))
             ->get();
 
         return [
