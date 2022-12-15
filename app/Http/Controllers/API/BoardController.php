@@ -11,8 +11,14 @@ class BoardController extends Controller
 {
     public function index()
     {
-        $preparing = Order::latest()->limit(env('BOARD_TICKET_LIMIT', 10))->preparing()->get();
-        $ready = Order::latest()->limit(env('BOARD_TICKET_LIMIT', 10))->ready()->get();
+        $preparing = Order::preparing()
+            ->orderBy('ticket_number', 'ASC')
+            ->limit(env('BOARD_TICKET_LIMIT', 10))
+            ->get();
+        $ready = Order::ready()
+            ->orderBy('ticket_number', 'ASC')
+            ->limit(env('BOARD_TICKET_LIMIT', 10))
+            ->get();
 
         return [
             'preparing' => OrderResource::collection($preparing),

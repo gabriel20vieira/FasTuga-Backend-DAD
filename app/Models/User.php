@@ -90,7 +90,7 @@ class User extends Authenticatable
         return $this->orders()
             ->getQuery()
             ->latest()
-            ->whereBetween('created_at', [now()->subMinutes(env('PAYMENT_TIME', 5)), now()])
+            ->whereBetween('created_at', [now()->subMinutes(env('PAYMENT_TIME', 30)), now()])
             ->first();
     }
 
@@ -104,7 +104,7 @@ class User extends Authenticatable
         return $this->orders()
             ->getQuery()
             ->latest()
-            ->whereBetween('created_at', [now()->subMinutes(env('PAYMENT_TIME', 5)), now()])
+            ->whereBetween('created_at', [now()->subMinutes(env('PAYMENT_TIME', 30)), now()])
             ->get();
     }
 

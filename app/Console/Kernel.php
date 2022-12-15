@@ -17,7 +17,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->call(function () {
-            $orders = Order::whereNotBetween('created_at', [now()->subMinutes(env('PAYMENT_TIME', 60)), now()])
+            $orders = Order::whereNotBetween('created_at', [now()->subMinutes(env('PAYMENT_TIME', 30)), now()])
                 ->whereNull('delivered_by')->get();
             foreach ($orders as $order) {
                 $order->items()->delete();
