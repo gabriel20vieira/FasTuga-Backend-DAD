@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -36,6 +37,9 @@ class RouteServiceProvider extends ServiceProvider
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
         });
+
+        Route::model('orderItem', OrderItem::class);
+        Route::model('orderitem', OrderItem::class);
     }
 
     /**

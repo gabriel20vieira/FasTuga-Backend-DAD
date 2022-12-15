@@ -145,11 +145,12 @@ class OrdersController extends Controller
     public function update(UpdateOrderRequest $request, Order $order)
     {
 
+        abort_if($order->status == OrderStatus::CANCELED->value, 400, "Order is canceled.");
+
         $saved = DB::transaction(function () use ($request, $order) {
 
-            $order->update($request->safe()->only('status'));
+            if ($request->input('status') == OrderStatus::CANCELED->value && $request->user('api')->isManager()) {
 
-            if ($order->status == OrderStatus::CANCELED->value && $request->user('api')->isManager()) {
                 $refund = Order::makeRefund(
                     $order->payment_type,
                     $order->payment_reference,
@@ -164,8 +165,43 @@ class OrdersController extends Controller
                     )
                 );
 
-                $order->customer->points -= $order->points_gained;
-                $order->customer->save();
+                if ($order->customer && $order->points_gained > 0) {
+                    $order->customer->points -= $order->points_gained;
+                    $order->customer->save();
+                }
+
+                $order->update($request->safe()->only('status'));
+            }
+
+            abort_if($order->status == OrderStatus::DELIVERED->value, 400, "Order has been delivered.");
+
+            if (
+                $request->user('api')->isDelivery()
+                && $request->input('status') != OrderStatus::CANCELED->value
+            ) {
+
+                switch ($request->input('status')) {
+                    case OrderStatus::DELIVERED->value:
+                        $order->delivered_by = $request->user('api')->id;
+                        break;
+                    case OrderStatus::READY->value:
+                        abort_if(
+                            $order->items()
+                                ->getQuery()
+                                ->where('status', '!=', OrderItemStatus::READY->value)
+                                ->get()
+                                ->count() > 0,
+                            400,
+                            "Items are not ready."
+                        );
+                        $order->delivered_by = null;
+                        break;
+                    case OrderStatus::PREPARING->value:
+                        $order->delivered_by = null;
+                        break;
+                }
+
+                $order->update($request->safe()->only('status'));
             }
 
             return $order->save();

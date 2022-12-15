@@ -2,16 +2,17 @@
 
 namespace App\Models;
 
+use App\Models\Types\OrderStatus;
 use App\Models\Types\PaymentType;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Request;
 use App\Http\Requests\StoreOrderRequest;
-use App\Models\Types\OrderStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -85,7 +86,7 @@ class Order extends Model
      */
     public function scopeReady($query)
     {
-        return $query->whereStatus(OrderStatus::READY);
+        return $query->whereStatus(OrderStatus::READY->value);
     }
 
     /**
@@ -96,7 +97,7 @@ class Order extends Model
      */
     public function scopePreparing($query)
     {
-        return $query->whereStatus(OrderStatus::PREPARING);
+        return $query->whereStatus(OrderStatus::PREPARING->value);
     }
 
     /**
@@ -107,7 +108,7 @@ class Order extends Model
      */
     public function scopeDelivered($query)
     {
-        return $query->whereStatus(OrderStatus::DELIVERED);
+        return $query->whereStatus(OrderStatus::DELIVERED->value);
     }
 
     /**
@@ -118,7 +119,7 @@ class Order extends Model
      */
     public function scopeCanceled($query)
     {
-        return $query->whereStatus(OrderStatus::CANCELED);
+        return $query->whereStatus(OrderStatus::CANCELED->value);
     }
 
     /**
