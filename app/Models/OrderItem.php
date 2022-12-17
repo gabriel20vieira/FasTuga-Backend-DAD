@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Types\OrderItemStatus;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -72,5 +73,50 @@ class OrderItem extends Model
     public function preparated()
     {
         return $this->hasOne(User::class, 'id', 'preparation_by');
+    }
+
+    /**
+     * Scope a given status
+     *
+     * @param Builder $query
+     * @param OrderItemStatus $status
+     * @return Builder
+     */
+    public function scopeWhereStatus($query, OrderItemStatus $status)
+    {
+        return $query->where('status', $status);
+    }
+
+    /**
+     * Ready scope
+     *
+     * @param  Builder  $query
+     * @return Builder
+     */
+    public function scopeReady($query)
+    {
+        return $query->whereStatus(OrderItemStatus::READY);
+    }
+
+    /**
+     * Ready scope
+     *
+     * @param  Builder  $query
+     * @return Builder
+     */
+    public function scopePreparing($query)
+    {
+        return $query->whereStatus(OrderItemStatus::PREPARING);
+    }
+
+    /**
+     * Ready scope
+     *
+     * @param  Builder  $query
+     * @return Builder
+     */
+    public function scopeWaiting($query)
+    {
+        return $query->whereStatus(OrderItemStatus::WAITING);
     }
 }
