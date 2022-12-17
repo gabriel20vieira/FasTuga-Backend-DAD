@@ -19,7 +19,7 @@ class OrderPolicy
      */
     public function viewAny(?User $user)
     {
-        return $this->isAuthenticated();
+        return $this->isAuthenticated() && !$this->ifAuthenticated($user)->isChef();
     }
 
     /**

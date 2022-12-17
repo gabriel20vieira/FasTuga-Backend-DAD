@@ -36,10 +36,12 @@ class OrdersController extends Controller
     public function index(Request $request)
     {
         $builder = Order::query();
-        if (auth('api')->user()->isManager()) {
+        if ($request->user('api')->isManager()) {
             $builder = $builder->with('items')->latest();
-        } else {
-            $builder = auth('api')->user()->orders()->with('items')->latest();
+        } else if ($request->user('api')->isDelivery()) {
+            $builder = $request->user('api')->delivered()->latest()->with('items');
+        } else if ($request->user('api')->isCustomer()) {
+            $builder = $request->user('api')->orders()->with('items')->latest();
         }
 
         return OrderResource::collection(

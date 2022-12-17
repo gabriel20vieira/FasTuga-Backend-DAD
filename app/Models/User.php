@@ -81,6 +81,16 @@ class User extends Authenticatable
     }
 
     /**
+     * Delivered relationship
+     *
+     * @return void
+     */
+    public function delivered()
+    {
+        return $this->hasMany(Order::class, 'delivered_by', 'id');
+    }
+
+    /**
      * Get user latest payment
      *
      * @return void
