@@ -23,7 +23,6 @@ use App\Http\Controllers\API\StatisticsController;
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/logged', [HomeController::class, 'logged'])->name('logged');
 
 Route::post('login', [AuthenticationController::class, 'login'])->name('login');
 Route::post('register', [AuthenticationController::class, 'register'])->name('register');
