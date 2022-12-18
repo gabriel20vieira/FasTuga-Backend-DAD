@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Models\User;
 use App\Models\Order;
 use App\Models\Customer;
 use App\Models\OrderItem;
-use Illuminate\Http\Request;
-use App\Models\Types\ProductType;
+use App\Models\Types\UserType;
 use Illuminate\Support\Carbon;
+use App\Models\Types\ProductType;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\Types\OrderStatus;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Database\Eloquent\Builder;
 
 class StatisticsController extends Controller
@@ -19,51 +23,118 @@ class StatisticsController extends Controller
     protected int $minutes = 30;
 
     /**
-     * Global app statistics
+     * Statistics endpoint
      *
-     * @return void
+     * @return Response
      */
     public function statistics()
     {
         Gate::authorize('access-statistics');
 
+        switch (auth('api')->user('api')->type) {
+            case UserType::MANAGER->value:
+                return $this->manager();
+            case UserType::CUSTOMER->value:
+                return $this->customer();
+            case UserType::DELIVERY->value:
+                return $this->delivery();
+            case UserType::CHEF->value:
+                return $this->chef();
+        }
+
         return [
-            'all' => [
-                'total_of_new_customers' => $this->totalOfCustomers(),
-                //'total_of_orders' => $this->totalOfOrders(),
-                'total_of_orders_by_type' => $this->ordersByType(),
-                'employee_with_most_deliveries' => $this->employeeWithMostDeliveries(),
-                'chef_with_most_orders' => $this->chefWithMostOrders(),
-                'best_selling_products_by_type' => $this->bestSellingProductsByType(),
-                'average_paid_value_per_order' => $this->averagePaidValuePerOrder(),
-                'order_with_highest_paid_value' => $this->orderWithHighestPaidValue(),
-                'new_users_by_month' => $this->newUsersByMonth(),
-            ],
-            'monthly' => [
-                //'total_of_new_customers' => $this->totalOfCustomers(Carbon::now()->subMonth()),
-                //'total_of_orders' => $this->totalOfOrders(Carbon::now()->subMonth()),
-                //'total_of_orders_by_type' => $this->ordersByType(Carbon::now()->subMonth()),
-                'average_paid_value_per_order' => $this->averagePaidValuePerOrder(Carbon::now()->subMonth()),
-                'order_with_highest_paid_value' => $this->orderWithHighestPaidValue(Carbon::now()->subMonth()),
-            ],
-            'weekly' => [
-                'total_of_new_customers' => $this->totalOfCustomers(Carbon::now()->subWeek()),
-                //'total_of_orders' => $this->totalOfOrders(Carbon::now()->subWeek()),
-                //'total_of_orders_by_type' => $this->ordersByType(Carbon::now()->subWeek()),
-                'average_paid_value_per_order' => $this->averagePaidValuePerOrder(Carbon::now()->subWeek()),
-                'order_with_highest_paid_value' => $this->orderWithHighestPaidValue(Carbon::now()->subWeek()),
-            ],
-            'daily' => [
-                'total_earnings' => $this->totalEarnings(Carbon::now()->subDay()),
-                'total_of_new_customers' => $this->totalOfCustomers(Carbon::now()->subDay()),
-                'total_of_orders' => $this->totalOfOrders(Carbon::now()->subDay()),
-                //'total_of_orders_by_type' => $this->ordersByType(Carbon::now()->subDay()),
-                'mean_of_orders_by_' . $this->minutes . '_minutes' => $this->meanOfOrdersAMinute($this->minutes),
-                'mean_of_paid_by_' . $this->minutes . '_minutes' => $this->meanOfPaidAMinute($this->minutes),
-                'average_paid_value_per_order' => $this->averagePaidValuePerOrder(Carbon::now()->subDay()),
-                'order_with_highest_paid_value' => $this->orderWithHighestPaidValue(Carbon::now()->subDay()),
-            ]
+            'message' => 'No statistics found for this user.'
         ];
+    }
+
+    private function chef()
+    {
+        return [
+            'items_cooked' => auth('api')->user()->prepared->count(),
+            'most_cooked' =>  OrderItem::selectRaw('products.name, products.type, products.photo_url, COUNT(*) AS times_cooked')
+                ->leftJoin('products', 'products.id', 'order_items.product_id')
+                ->where('order_items.preparation_by', '=', auth('api')->user()->id)
+                ->groupBy('products.type')
+                ->get()
+        ];
+    }
+
+    /**
+     * Chef statistics
+     *
+     * @return array
+     */
+    private function delivery()
+    {
+        return [
+            'orders_delivered' => auth('api')->user()->delivered->count(),
+            'orders_last_hour' => auth('api')->user()->delivered()->whereBetween('date', [Carbon::now()->subHour(), Carbon::now()])->get()->count()
+        ];
+    }
+
+    /**
+     * Statistics for customer
+     *
+     * @return array
+     */
+    private function customer()
+    {
+        $total_of_orders = auth('api')->user()->orders->count();
+        $mean_paid_per_order = round(auth('api')->user()->orders->sum('total_paid') / $total_of_orders, 2);
+        $most_chosen_product_per_type = $this->ordersByType(function ($builder) {
+            /** @var Builder $builder */
+            return $builder->where('orders.customer_id', '=', auth('api')->user()->customer->id);
+        });
+        $most_points_on_order = auth('api')->user()->orders->max('points_gained');
+        $biggest_discount = auth('api')->user()->orders->max('total_paid_with_points');
+
+        return [
+            'total_of_orders' => $total_of_orders,
+            'mean_of_paid_per_order' => $mean_paid_per_order,
+            'most_chosen_product_per_type' => $most_chosen_product_per_type,
+            'most_points_on_order' => $most_points_on_order,
+            'biggest_discount' => $biggest_discount
+        ];
+    }
+
+    /**
+     * Manager collection of staatistics
+     *
+     * @return array
+     */
+    private function manager()
+    {
+        return
+            [
+                'all' => [
+                    'total_of_new_customers' => $this->totalOfCustomers(),
+                    'total_of_orders_by_type' => $this->ordersByType(),
+                    'employee_with_most_deliveries' => $this->employeeWithMostDeliveries(),
+                    'chef_with_most_orders' => $this->chefWithMostOrders(),
+                    'best_selling_products_by_type' => $this->bestSellingProductsByType(),
+                    'average_paid_value_per_order' => $this->averagePaidValuePerOrder(),
+                    'order_with_highest_paid_value' => $this->orderWithHighestPaidValue(),
+                    'new_users_by_month' => $this->newUsersByMonth(),
+                ],
+                'monthly' => [
+                    'average_paid_value_per_order' => $this->averagePaidValuePerOrder(Carbon::now()->subMonth()),
+                    'order_with_highest_paid_value' => $this->orderWithHighestPaidValue(Carbon::now()->subMonth()),
+                ],
+                'weekly' => [
+                    'total_of_new_customers' => $this->totalOfCustomers(Carbon::now()->subWeek()),
+                    'average_paid_value_per_order' => $this->averagePaidValuePerOrder(Carbon::now()->subWeek()),
+                    'order_with_highest_paid_value' => $this->orderWithHighestPaidValue(Carbon::now()->subWeek()),
+                ],
+                'daily' => [
+                    'total_earnings' => $this->totalEarnings(Carbon::now()->subDay()),
+                    'total_of_new_customers' => $this->totalOfCustomers(Carbon::now()->subDay()),
+                    'total_of_orders' => $this->totalOfOrders(Carbon::now()->subDay()),
+                    'mean_of_orders_by_' . $this->minutes . '_minutes' => $this->meanOfOrdersAMinute($this->minutes),
+                    'mean_of_paid_by_' . $this->minutes . '_minutes' => $this->meanOfPaidAMinute($this->minutes),
+                    'average_paid_value_per_order' => $this->averagePaidValuePerOrder(Carbon::now()->subDay()),
+                    'order_with_highest_paid_value' => $this->orderWithHighestPaidValue(Carbon::now()->subDay()),
+                ]
+            ];
     }
 
     /**
@@ -72,32 +143,20 @@ class StatisticsController extends Controller
      * @param Carbon|null $howOld
      * @return void
      */
-
-
-    private function ordersByType(Carbon $howOld = null)
+    private function ordersByType($extra = null)
     {
         /** @var Builder $builder */
-        $builder = Order::selectRaw('COUNT(*) AS delivered, products.type')
+        $builder = Order::selectRaw('COUNT(*) AS delivered, products.type AS type')
             ->rightJoin('order_items', 'order_items.order_id', '=', 'orders.id')
             ->leftJoin('products', 'products.id', '=', 'order_items.product_id')
             ->groupBy('products.type');
-        /*
-        if ($howOld != null) {
-            /** @var Builder $builder */
-        /*
-            $builder = $builder->whereBetween(
-                'orders.created_at',
-                [
-                    $howOld,
-                    Carbon::now()
-                ]
-            );
-        }*/
 
+        if ($extra) {
+            $builder = $extra($builder);
+        }
 
         return $builder->get();
     }
-
 
     /**
      * Total os customers within a period
@@ -173,8 +232,13 @@ class StatisticsController extends Controller
         return $builder;
     }
 
+    /**
+     * Stats of users by month
+     *
+     * @return \Illuminate\Support\Collection
+     */
     private function newUsersByMonth()
-    {   
+    {
         $builder = DB::table('users')
             ->selectRaw(DB::raw('YEAR(created_at) as year,
             sum(case when Month(users.created_at) = 1 then 1 else 0 end) AS Jan,
@@ -195,6 +259,11 @@ class StatisticsController extends Controller
         return $builder;
     }
 
+    /**
+     * Best selling products by type
+     *
+     * @return array
+     */
     private function bestSellingProductsByType()
     {
         $builder = array();
@@ -207,6 +276,11 @@ class StatisticsController extends Controller
         return $builder;
     }
 
+    /**
+     * Chef with most orders
+     *
+     * @return \Illuminate\Support\Collection
+     */
     private function chefWithMostOrders()
     {
         $builder = DB::table('order_items')->selectRaw('users.name,preparation_by, COUNT(preparation_by) AS `preparation_by_count`')
@@ -215,32 +289,49 @@ class StatisticsController extends Controller
         return $builder;
     }
 
+    /**
+     * Employee with most deliveries
+     *
+     * @return \Illuminate\Support\Collection
+     */
     private function employeeWithMostDeliveries()
     {
-        $builder = Order::selectRaw('users.name,delivered_by, COUNT(delivered_by) AS `delivered_by_count`')->where('status', 'D')
+        $builder = Order::selectRaw('users.name,delivered_by,photo_url, COUNT(delivered_by) AS `delivered_by_count`')->where('status', 'D')
             ->leftJoin('users', 'users.id', '=', 'orders.delivered_by')
             ->groupBy('delivered_by')->orderByDesc('delivered_by_count')->limit(5)->get();
         return $builder;
     }
 
+    /**
+     * Statsistic of average pain per Order
+     *
+     * @param Carbon|null $howOld
+     * @return float
+     */
     private function averagePaidValuePerOrder(Carbon $howOld = null)
     {
         if ($howOld) {
             /** @var Builder $builder */
-            $builder = Order::where('status', 'D')->whereBetween('created_at', [$howOld, Carbon::now()])->avg('total_paid');
+            $builder = Order::where('status', OrderStatus::DELIVERED->value)->whereBetween('created_at', [$howOld, Carbon::now()])->avg('total_paid');
         } else {
-            $builder = Order::where('status', 'D')->avg('total_paid');
+            $builder = Order::where('status', OrderStatus::DELIVERED->value)->avg('total_paid');
         }
         return round($builder, 2);
     }
 
+    /**
+     * Statistic of highest paid
+     *
+     * @param Carbon|null $howOld
+     * @return float
+     */
     private function orderWithHighestPaidValue(Carbon $howOld = null)
     {
         if ($howOld) {
             /** @var Builder $builder */
-            $builder = Order::where('status', 'D')->whereBetween('created_at', [$howOld, Carbon::now()])->max('total_paid');
+            $builder = Order::where('status', OrderStatus::DELIVERED->value)->whereBetween('created_at', [$howOld, Carbon::now()])->max('total_paid');
         } else {
-            $builder = Order::where('status', 'D')->max('total_paid');
+            $builder = Order::where('status', OrderStatus::DELIVERED->value)->max('total_paid');
         }
         return $builder;
     }

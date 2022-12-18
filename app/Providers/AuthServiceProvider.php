@@ -46,10 +46,7 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         Gate::define('access-statistics', function () {
-            if (auth('api')->hasUser()) {
-                return !auth('api')->user()->isCustomer();
-            }
-            return false;
+            return auth('api')->hasUser();
         });
     }
 }
