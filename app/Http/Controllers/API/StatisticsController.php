@@ -266,13 +266,10 @@ class StatisticsController extends Controller
      */
     private function bestSellingProductsByType()
     {
-        $builder = array();
-        foreach (ProductType::cases() as $type) {
-            $builder[] = DB::table('order_items')->selectRaw('products.id,products.name,products.photo_url,products.type,COUNT(order_items.product_id) AS `product_count`')
-                ->join('products', 'products.id', '=', 'order_items.product_id')
-                ->where('products.type', '=', $type)
-                ->groupBy('order_items.product_id')->orderByDesc('product_count')->limit(1)->get();
-        }
+        $builder = DB::table('order_items')->selectRaw('products.id,products.name,products.photo_url,products.type,COUNT(order_items.product_id) AS `product_count`')
+            ->join('products', 'products.id', '=', 'order_items.product_id')
+            ->groupBy('products.type')->orderByDesc('product_count')->get();
+
         return $builder;
     }
 
