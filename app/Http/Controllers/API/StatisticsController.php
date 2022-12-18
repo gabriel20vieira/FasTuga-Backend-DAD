@@ -8,14 +8,15 @@ use App\Models\Customer;
 use App\Models\OrderItem;
 use App\Models\Types\UserType;
 use Illuminate\Support\Carbon;
+use App\Models\Types\OrderStatus;
 use App\Models\Types\ProductType;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Models\Types\OrderStatus;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 class StatisticsController extends Controller
 {
@@ -119,6 +120,9 @@ class StatisticsController extends Controller
                 'monthly' => [
                     'average_paid_value_per_order' => $this->averagePaidValuePerOrder(Carbon::now()->subMonth()),
                     'order_with_highest_paid_value' => $this->orderWithHighestPaidValue(Carbon::now()->subMonth()),
+                    'transactions_by_type' => $this->transactionsByType(),
+                    'number_of_refunds__canceled_orders' => $this->numberOfRefunds(),
+                    'total_refunded__lost_canceled_order' => $this->totalOfRefund()
                 ],
                 'weekly' => [
                     'total_of_new_customers' => $this->totalOfCustomers(Carbon::now()->subWeek()),
@@ -135,6 +139,26 @@ class StatisticsController extends Controller
                     'order_with_highest_paid_value' => $this->orderWithHighestPaidValue(Carbon::now()->subDay()),
                 ]
             ];
+    }
+
+    /**
+     * Total of refunds
+     *
+     * @return float
+     */
+    private function totalOfRefund()
+    {
+        return Order::canceled()->whereBetween('created_at', [Carbon::now()->subMonth(), Carbon::now()])->sum('total_paid');
+    }
+
+    /**
+     * Number of refunds
+     *
+     * @return int
+     */
+    private function numberOfRefunds()
+    {
+        return Order::canceled()->whereBetween('created_at', [Carbon::now()->subMonth(), Carbon::now()])->get()->count();
     }
 
     /**
@@ -331,5 +355,15 @@ class StatisticsController extends Controller
             $builder = Order::where('status', OrderStatus::DELIVERED->value)->max('total_paid');
         }
         return $builder;
+    }
+
+    /**
+     * Transactions by type
+     *
+     * @return Collection
+     */
+    private function transactionsByType()
+    {
+        return Order::selectRaw('COUNT(*) AS quantity, orders.payment_type')->groupBy('orders.payment_type')->get();
     }
 }

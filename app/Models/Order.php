@@ -75,7 +75,7 @@ class Order extends Model
      */
     public function scopeWhereStatus($query, OrderStatus $status)
     {
-        return $query->where('status', $status);
+        return $query->where('status', $status->value);
     }
 
     /**
