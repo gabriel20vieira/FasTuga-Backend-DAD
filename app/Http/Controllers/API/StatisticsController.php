@@ -68,7 +68,7 @@ class StatisticsController extends Controller
     {
         return [
             'orders_delivered' => auth('api')->user()->delivered->count(),
-            'orders_last_hour' => auth('api')->user()->delivered()->whereBetween('date', [Carbon::now()->subHour(), Carbon::now()])->get()->count()
+            'orders_last_hour' => auth('api')->user()->delivered()->whereBetween('updated_at', [Carbon::now()->subHour(), Carbon::now()])->get()->count()
         ];
     }
 
