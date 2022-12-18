@@ -283,9 +283,9 @@ class StatisticsController extends Controller
      */
     private function chefWithMostOrders()
     {
-        $builder = DB::table('order_items')->selectRaw('users.name,preparation_by, COUNT(preparation_by) AS `preparation_by_count`')
+        $builder = DB::table('order_items')->selectRaw('users.name,preparation_by, COUNT(preparation_by) AS `count`')
             ->leftJoin('users', 'users.id', '=', 'order_items.preparation_by')
-            ->groupBy('preparation_by')->orderByDesc('preparation_by_count')->limit(5)->get();
+            ->groupBy('preparation_by')->orderByDesc('count')->limit(5)->get();
         return $builder;
     }
 
@@ -296,9 +296,9 @@ class StatisticsController extends Controller
      */
     private function employeeWithMostDeliveries()
     {
-        $builder = Order::selectRaw('users.name,delivered_by,photo_url, COUNT(delivered_by) AS `delivered_by_count`')->where('status', 'D')
+        $builder = Order::selectRaw('users.name,delivered_by, COUNT(delivered_by) AS `count`')->where('status', 'D')
             ->leftJoin('users', 'users.id', '=', 'orders.delivered_by')
-            ->groupBy('delivered_by')->orderByDesc('delivered_by_count')->limit(5)->get();
+            ->groupBy('delivered_by')->orderByDesc('count')->limit(5)->get();
         return $builder;
     }
 
