@@ -170,7 +170,7 @@ class StatisticsController extends Controller
     private function ordersByType($extra = null)
     {
         /** @var Builder $builder */
-        $builder = Order::selectRaw('COUNT(*) AS delivered, products.type AS type')
+        $builder = Order::selectRaw('COUNT(*) AS delivered, products.type, products.photo_url, products.name, products.price')
             ->rightJoin('order_items', 'order_items.order_id', '=', 'orders.id')
             ->leftJoin('products', 'products.id', '=', 'order_items.product_id')
             ->groupBy('products.type');
