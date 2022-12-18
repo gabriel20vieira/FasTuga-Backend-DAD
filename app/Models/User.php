@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
@@ -73,7 +74,7 @@ class User extends Authenticatable
     /**
      * Prepared relationship
      *
-     * @return void
+     * @return HasMany
      */
     public function prepared()
     {
@@ -83,7 +84,7 @@ class User extends Authenticatable
     /**
      * Delivered relationship
      *
-     * @return void
+     * @return HasMany
      */
     public function delivered()
     {

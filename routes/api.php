@@ -51,7 +51,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::get('users/me', [UsersController::class, 'me']);
     Route::apiResource('users', UsersController::class);
 
-    Route::apiResource('orderitems', OrderItemController::class)->only('update');
+    Route::apiResource('orderitems', OrderItemController::class)->only('index', 'update');
 
     Route::get('statistics', [StatisticsController::class, 'statistics']);
 });

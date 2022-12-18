@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\UpdateOrderItemRequest;
-use App\Http\Resources\OrderItemResource;
 use App\Models\OrderItem;
+use Illuminate\Http\Request;
 use App\Models\Types\OrderStatus;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Http\Resources\OrderItemResource;
+use App\Http\Requests\UpdateOrderItemRequest;
 
 class OrderItemController extends Controller
 {
@@ -18,7 +19,23 @@ class OrderItemController extends Controller
      */
     public function __construct()
     {
-        $this->authorizeResource(OrderItem::class, 'orderitem');
+        $this->authorizeResource(OrderItem::class, 'orderitems');
+    }
+
+
+    /**
+     * List all records
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function index(Request $request)
+    {
+        $builder = $request->user('api')->prepared()->orderBy('id', 'DESC');
+
+        return OrderItemResource::collection(
+            $this->paginateBuilder($builder, $request->input('size'))
+        );
     }
 
     /**
