@@ -23,6 +23,8 @@ class StatisticsController extends Controller
 
     protected int $minutes = 30;
 
+    protected $user = null;
+
     /**
      * Statistics endpoint
      *
@@ -32,7 +34,8 @@ class StatisticsController extends Controller
     {
         Gate::authorize('access-statistics');
 
-        switch (auth('api')->user('api')->type) {
+        $this->user = $this->user;
+        switch ($this->user->type) {
             case UserType::MANAGER->value:
                 return $this->manager();
             case UserType::CUSTOMER->value:
@@ -48,13 +51,18 @@ class StatisticsController extends Controller
         ];
     }
 
+    /**
+     * Cheft statistics
+     *
+     * @return array
+     */
     private function chef()
     {
         return [
-            'items_cooked' => auth('api')->user()->prepared->count(),
+            'items_cooked' => $this->user->prepared->count(),
             'most_cooked' =>  OrderItem::selectRaw('products.name, products.type, products.photo_url, COUNT(*) AS times_cooked')
                 ->leftJoin('products', 'products.id', 'order_items.product_id')
-                ->where('order_items.preparation_by', '=', auth('api')->user()->id)
+                ->where('order_items.preparation_by', '=', $this->user->id)
                 ->groupBy('products.type')
                 ->get()
         ];
@@ -68,8 +76,8 @@ class StatisticsController extends Controller
     private function delivery()
     {
         return [
-            'orders_delivered' => auth('api')->user()->delivered->count(),
-            'orders_last_hour' => auth('api')->user()->delivered()->whereBetween('updated_at', [Carbon::now()->subHour(), Carbon::now()])->get()->count()
+            'orders_delivered' => $this->user->delivered->count(),
+            'orders_last_hour' => $this->user->delivered()->whereBetween('updated_at', [Carbon::now()->subHour(), Carbon::now()])->get()->count()
         ];
     }
 
@@ -80,14 +88,14 @@ class StatisticsController extends Controller
      */
     private function customer()
     {
-        $total_of_orders = auth('api')->user()->orders->count();
-        $mean_paid_per_order = round(auth('api')->user()->orders->sum('total_paid') / $total_of_orders, 2);
+        $total_of_orders = $this->user->orders->count();
+        $mean_paid_per_order = round($this->user->orders->sum('total_paid') / $total_of_orders, 2);
         $most_chosen_product_per_type = $this->ordersByType(function ($builder) {
             /** @var Builder $builder */
-            return $builder->where('orders.customer_id', '=', auth('api')->user()->customer->id);
+            return $builder->where('orders.customer_id', '=', $this->user->customer->id);
         });
-        $most_points_on_order = auth('api')->user()->orders->max('points_gained');
-        $biggest_discount = auth('api')->user()->orders->max('total_paid_with_points');
+        $most_points_on_order = $this->user->orders->max('points_gained');
+        $biggest_discount = $this->user->orders->max('total_paid_with_points');
 
         return [
             'total_of_orders' => $total_of_orders,
