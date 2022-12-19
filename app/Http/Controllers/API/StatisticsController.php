@@ -34,7 +34,7 @@ class StatisticsController extends Controller
     {
         Gate::authorize('access-statistics');
 
-        $this->user = $this->user;
+        $this->user = auth('api')->user();
         switch ($this->user->type) {
             case UserType::MANAGER->value:
                 return $this->manager();
