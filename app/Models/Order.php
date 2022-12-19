@@ -59,11 +59,11 @@ class Order extends Model
     /**
      * Delivered by relationship
      *
-     * @return HasOne
+     * @return BelongsTo
      */
     public function delivered()
     {
-        return $this->hasOne(User::class, 'id', 'delivered_by');
+        return $this->belongsTo(User::class, 'delivered_by', 'id');
     }
 
     /**

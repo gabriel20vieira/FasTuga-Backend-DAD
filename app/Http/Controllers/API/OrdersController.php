@@ -184,7 +184,7 @@ class OrdersController extends Controller
 
                 switch ($request->input('status')) {
                     case OrderStatus::DELIVERED->value:
-                        $order->delivered_by = $request->user('api')->id;
+                        $order->delivered()->associate($request->user('api'));
                         break;
                     case OrderStatus::READY->value:
                         abort_if(
@@ -196,10 +196,10 @@ class OrdersController extends Controller
                             400,
                             "Items are not ready."
                         );
-                        $order->delivered_by = null;
+                        $order->delivered()->dissociate();
                         break;
                     case OrderStatus::PREPARING->value:
-                        $order->delivered_by = null;
+                        $order->delivered()->dissociate();
                         break;
                 }
 
@@ -249,7 +249,7 @@ class OrdersController extends Controller
                 'order_id' => $order->id,
                 'order_local_number' => ++$i,
                 'product_id' => $product->id,
-                'status' => $product->type == ProductType::HOT_DISH->value ? OrderItemStatus::WAITING : OrderItemStatus::READY,
+                'status' => $product->type == ProductType::HOT_DISH->value ? OrderItemStatus::WAITING->value : OrderItemStatus::READY->value,
                 'price' => $product->price,
             ]);
         }

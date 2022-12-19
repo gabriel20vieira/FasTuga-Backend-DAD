@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\OrderItemResource;
 use App\Http\Requests\UpdateOrderItemRequest;
+use App\Models\Types\OrderItemStatus;
+use Illuminate\Support\Facades\Log;
 
 class OrderItemController extends Controller
 {
@@ -50,11 +52,21 @@ class OrderItemController extends Controller
         abort_if(
             $orderItem->order->status != OrderStatus::PREPARING->value,
             400,
-            "Order Item cannot be changed. Ordes has another state."
+            "Order Item cannot be changed. Order state forbids."
         );
 
         $updated = DB::transaction(function () use ($request, $orderItem) {
             $orderItem->update($request->safe()->only('status'));
+            switch ($request->input('status')) {
+                case OrderItemStatus::READY->value:
+                    $orderItem->preparated()->associate($request->user('api'));
+                    break;
+                case OrderItemStatus::PREPARING->value:
+                case OrderItemStatus::WAITING->value:
+                    $orderItem->preparated()->dissociate();
+                    break;
+            }
+
             return $orderItem->save();
         });
 

@@ -68,11 +68,11 @@ class OrderItem extends Model
     /**
      * Prepared by relationship
      *
-     * @return HasOne
+     * @return BelongsTo
      */
     public function preparated()
     {
-        return $this->hasOne(User::class, 'id', 'preparation_by');
+        return $this->belongsTo(User::class, 'preparation_by', 'id');
     }
 
     /**
