@@ -58,13 +58,14 @@ class StatisticsController extends Controller
      */
     private function chef()
     {
+        $most_cooked = OrderItem::selectRaw('products.name, products.type, products.photo_url, COUNT(*) AS times_cooked')
+            ->leftJoin('products', 'products.id', 'order_items.product_id')
+            ->where('order_items.preparation_by', '=', $this->user->id)
+            ->groupBy('products.type')
+            ->get();
         return [
             'items_cooked' => $this->user->prepared->count(),
-            'most_cooked' =>  OrderItem::selectRaw('products.name, products.type, products.photo_url, COUNT(*) AS times_cooked')
-                ->leftJoin('products', 'products.id', 'order_items.product_id')
-                ->where('order_items.preparation_by', '=', $this->user->id)
-                ->groupBy('products.type')
-                ->get()
+            'most_cooked' =>  $most_cooked
         ];
     }
 
@@ -298,9 +299,9 @@ class StatisticsController extends Controller
      */
     private function bestSellingProductsByType()
     {
-        $builder = DB::table('order_items')->selectRaw('products.id,products.name,products.photo_url,products.type,COUNT(order_items.product_id) AS `product_count`')
-            ->join('products', 'products.id', '=', 'order_items.product_id')
-            ->groupBy('products.type')->orderByDesc('product_count')->get();
+        $builder = OrderItem::selectRaw('products.id,products.name,products.photo_url,products.type,COUNT(order_items.product_id) AS `product_count`')
+            ->rightJoin('products', 'products.id', '=', 'order_items.product_id')
+            ->groupBy('products.type')->orderBy('product_count', 'DESC')->get();
 
         return $builder;
     }
@@ -312,9 +313,9 @@ class StatisticsController extends Controller
      */
     private function chefWithMostOrders()
     {
-        $builder = DB::table('order_items')->selectRaw('users.name,preparation_by,users.photo_url, COUNT(preparation_by) AS `count`')
-            ->leftJoin('users', 'users.id', '=', 'order_items.preparation_by')
-            ->groupBy('preparation_by')->orderByDesc('count')->limit(5)->get();
+        $builder = OrderItem::selectRaw('users.name,preparation_by,users.photo_url, COUNT(order_items.preparation_by) AS `count`')
+            ->rightJoin('users', 'users.id', '=', 'order_items.preparation_by')
+            ->groupBy('preparation_by')->orderBy('count', 'DESC')->limit(5)->get();
         return $builder;
     }
 
