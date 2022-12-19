@@ -12,6 +12,7 @@ use App\Http\Resources\CustomerResource;
 use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
 use App\Http\Controllers\API\UsersController;
+use App\Http\Resources\UserCustomerResource;
 
 class CustomersController extends Controller
 {
@@ -55,7 +56,7 @@ class CustomersController extends Controller
             return $customer->save();
         });
 
-        return $returnModel ? $customer : (new UserResource($customer->user))->additional([
+        return $returnModel ? $customer : (new UserCustomerResource($customer->user))->additional([
             'message' => $created ? "Customer created with success." : "Customer was not created."
         ]);
     }
@@ -86,7 +87,7 @@ class CustomersController extends Controller
             return $customer->update($request->validated());
         });
 
-        return (new UserResource($customer->user))->additional([
+        return (new UserCustomerResource($customer->user))->additional([
             'message' => $updated ? "Customer updated with success." : "Customer was not updated."
         ]);
     }
