@@ -90,7 +90,7 @@ class StatisticsController extends Controller
     private function customer()
     {
         $total_of_orders = $this->user->orders->count();
-        $mean_paid_per_order = round($this->user->orders->sum('total_paid') / $total_of_orders, 2);
+        $mean_paid_per_order = round($this->user->orders->sum('total_paid') ?? 1 / $total_of_orders, 2);
         $most_chosen_product_per_type = $this->ordersByType(function ($builder) {
             /** @var Builder $builder */
             return $builder->where('orders.customer_id', '=', $this->user->customer->id);
@@ -238,7 +238,7 @@ class StatisticsController extends Controller
      */
     private function meanOfOrdersAMinute(int $minutes = 1440)
     {
-        return round(($this->totalOfOrders(Carbon::now()->subMinutes($minutes)) ?? 0) / $minutes, 2);
+        return round(($this->totalOfOrders(Carbon::now()->subMinutes($minutes)) ?? 1) / $minutes, 2);
     }
 
     /**
@@ -250,7 +250,7 @@ class StatisticsController extends Controller
     private function meanOfPaidAMinute(int $minutes = 1440)
     {
         $items = Order::whereBetween('created_at', [Carbon::now()->subMinutes($minutes), Carbon::now()])->sum('total_paid');
-        return round($items / $minutes, 2);
+        return round($items ?? 1 / $minutes, 2);
     }
 
     /**

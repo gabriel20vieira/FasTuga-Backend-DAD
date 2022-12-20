@@ -46,7 +46,8 @@ class UpdateCustomerRequest extends UpdateUserRequest
     public function messages()
     {
         $messages = [
-            'nif.nif' => 'The :attribute is not valid.'
+            'nif.nif' => 'The :attribute is not valid.',
+            'default_payment_reference.reference' => 'The reference provided is not valid.'
         ];
 
         $messages = array_merge($messages, (new StoreImageRequest())->messages());
