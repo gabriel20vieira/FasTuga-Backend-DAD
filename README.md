@@ -1,2 +1,3 @@
 # FasTuga Backend DAD
- Projeto realizado na âmbito da disciplina de DAD
+ Project developed in the scope of the Distributed Applications Development subject
+ Informatics Engineering Information Technology branch
